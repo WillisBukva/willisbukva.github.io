@@ -344,7 +344,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="stat-box glass"><div class="v" id="dPts">0</div><div class="l">Punkte</div></div>
 <div class="stat-box glass"><div class="v" id="dStreak">0</div><div class="l">&#128293; Streak</div></div>
 <div class="stat-box glass"><div class="v" id="dRep" style="cursor:pointer;" onclick="startSRSSession()" title="Jetzt wiederholen">0</div><div class="l">&#128260; Wiederholen</div></div>
-<div class="stat-box glass"><div class="v" id="dRetry">0</div><div class="l">&#128260; Fehler</div></div>
+<div class="stat-box glass" style="cursor:pointer;" onclick="showMistakes()" title="Fehler ansehen & wiederholen"><div class="v" id="dRetry">0</div><div class="l">&#128260; Fehler</div></div>
 </div>
 <div class="glass streak-box" onclick="showStreakCalendar()" style="cursor:pointer;" title="Antippen für den Streak-Kalender">
 <div class="streak-fire">&#128293;</div>
@@ -516,8 +516,9 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div><label style="font-size:.7rem;color:var(--text3);display:block;margin-bottom:.25rem;">Russisch</label><input class="inp" id="customRu" type="text" placeholder="русское слово" autocorrect="off" autocapitalize="none"></div>
 <div><label style="font-size:.7rem;color:var(--text3);display:block;margin-bottom:.25rem;">Deutsch</label><input class="inp" id="customDe" type="text" placeholder="Deutsche Bedeutung"></div>
 </div>
-<div style="margin-bottom:.5rem;"><label style="font-size:.7rem;color:var(--text3);display:block;margin-bottom:.25rem;">Eselsbridge (optional)</label><input class="inp" id="customMn" type="text" placeholder="Merkhilfe..."></div>
-<button class="btn primary" style="width:100%;" onclick="addCustomCard()">+ Hinzufügen</button>
+<div style="margin-bottom:.5rem;"><label style="font-size:.7rem;color:var(--text3);display:block;margin-bottom:.25rem;">Eselsbrücke (optional)</label><input class="inp" id="customMn" type="text" placeholder="Merkhilfe..."></div>
+<button class="btn primary" style="width:100%;" id="customAddBtn" onclick="addCustomCard()">+ Hinzufügen</button>
+<button class="btn" style="width:100%;margin-top:.4rem;display:none;" id="customCancelEdit" onclick="cancelCustomEdit()">Abbrechen</button>
 </div>
 <div id="customList" style="margin-bottom:1rem;"></div>
 <div id="customEmpty" style="text-align:center;padding:2rem;color:var(--text3);font-size:.85rem;">
@@ -3112,6 +3113,13 @@ function startSec(sec){
   if(sec==='custom'){
     const customCards=getCustomCards();
     if(!customCards.length){showCustomScreen();return;}
+    // echte Distraktoren erzeugen (eigene Karten + Grundwortschatz als Auffüllung)
+    var pool=customCards.concat(C['vocabulary']||[]);
+    customCards.forEach(function(w){
+      var others=pool.filter(function(d){return d.t!==w.t&&d.m!==w.m;}).sort(function(){return Math.random()-.5;}).slice(0,3);
+      w.o=[w.t].concat(others.map(function(d){return d.t;}));
+      w.r=[w.m].concat(others.map(function(d){return d.m;}));
+    });
     C['custom']=customCards;
   }
   cs=sec;const allData=C[sec];if(!allData||!allData.length){if(sec==='custom'){showCustomScreen();}return;}
@@ -5068,6 +5076,38 @@ function finishQ(){
 }
 
 // FEHLER-WIEDERHOLUNG
+// Fehler-Liste: zeigt die falsch beantworteten Wörter, einzeln entfernbar, gezielt wiederholbar
+function showMistakes(){
+  var errs=getErrs();
+  var ov=document.createElement('div');ov.className='levelup-overlay';
+  var inner='<div class="levelup-box" style="max-width:380px;width:94%;padding:1.4rem 1.1rem;max-height:85vh;overflow-y:auto;">';
+  inner+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;"><span style="font-size:1.1rem;font-weight:900;color:var(--cyan);">&#128260; Deine Fehler</span><button id="miClose" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem;font-family:inherit;padding:0 .2rem;">&#10005;</button></div>';
+  if(!errs.length){
+    inner+='<div style="text-align:center;padding:1.5rem 0;color:var(--text3);font-size:.85rem;">&#127881; Keine Fehler &mdash; alles richtig gemacht!<br>Falsch beantwortete Karten landen hier zum Wiederholen.</div>';
+    inner+='<button class="btn" style="width:100%;background:var(--glass);border-color:var(--border);" id="miCancel">Schließen</button>';
+  } else {
+    inner+='<div style="font-size:.75rem;color:var(--text3);margin-bottom:.8rem;">'+errs.length+' Karte(n) zum Wiederholen &mdash; antippen zum Anhören, ✕ entfernt aus der Liste:</div>';
+    errs.forEach(function(e,idx){
+      var it=e.item||{m:e.m,t:'?'};
+      inner+='<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:.35rem;">';
+      inner+='<div class="mi-word" data-m="'+(it.m||'').replace(/"/g,'&quot;')+'" style="flex:1;text-align:left;cursor:pointer;"><div style="font-size:.88rem;font-weight:700;">&#128266; '+(it.m||'')+'</div><div style="font-size:.74rem;color:var(--text3);">'+(it.t||'')+'</div></div>';
+      inner+='<button class="mi-del" data-idx="'+idx+'" style="background:var(--red2);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:var(--r-sm);padding:.25rem .55rem;font-size:.72rem;cursor:pointer;font-weight:700;">×</button>';
+      inner+='</div>';
+    });
+    inner+='<button class="btn primary" style="width:100%;margin-top:.6rem;" id="miStart">&#128260; Alle wiederholen ('+errs.length+')</button>';
+    inner+='<button class="btn" style="width:100%;margin-top:.4rem;background:var(--glass);border-color:var(--border);font-size:.8rem;" id="miClear">Liste leeren</button>';
+  }
+  inner+='</div>';
+  ov.innerHTML=inner;document.body.appendChild(ov);
+  var close=function(){ov.remove();};
+  ov.querySelector('#miClose').onclick=close;
+  var cc=ov.querySelector('#miCancel');if(cc)cc.onclick=close;
+  ov.querySelectorAll('.mi-word').forEach(function(w){w.onclick=function(){var m=this.getAttribute('data-m');if(m)spk(m);};});
+  ov.querySelectorAll('.mi-del').forEach(function(b){b.onclick=function(){var i=parseInt(this.getAttribute('data-idx'));var er=getErrs();er.splice(i,1);saveErrs(er);ov.remove();showMistakes();if(document.getElementById('dRetry'))document.getElementById('dRetry').textContent=er.length;};});
+  var st=ov.querySelector('#miStart');if(st)st.onclick=function(){ov.remove();startRetryMode();};
+  var cl=ov.querySelector('#miClear');if(cl)cl.onclick=function(){if(confirm('Ganze Fehler-Liste leeren?')){saveErrs([]);ov.remove();if(document.getElementById('dRetry'))document.getElementById('dRetry').textContent='0';}};
+}
+
 function startRetryMode(){
   const errs=getErrs();if(!errs.length){alert('Keine Fehler gespeichert!');return;}
   retryCb=errs.map(e=>e.item||{m:e.m,t:'?',s:'',x:'',o:[],r:[]}).filter(Boolean);
@@ -5164,23 +5204,50 @@ function showCustomScreen(){
   renderCustomList();
 }
 
+var _customEditIdx=-1;
 function addCustomCard(){
   const ru=document.getElementById('customRu').value.trim();
   const de=document.getElementById('customDe').value.trim();
   const mn=document.getElementById('customMn').value.trim();
   if(!ru||!de){alert('Bitte russisches Wort und deutsche Bedeutung eingeben!');return;}
   const cards=getCustomCards();
-  cards.push({m:ru,s:de,t:de,e:ru+' \u2192 '+de,x:'Eigene Vokabel',mn:mn||'',o:[de,'???','???','???'],r:[ru,'???','???','???']});
+  // Antwortoptionen werden beim Quiz-Start erzeugt (keine ???-Platzhalter mehr)
+  const card={m:ru,s:de,t:de,e:ru+' \u2192 '+de,x:'Eigene Vokabel',mn:mn||''};
+  if(_customEditIdx>=0&&cards[_customEditIdx]){cards[_customEditIdx]=card;_customEditIdx=-1;}
+  else cards.push(card);
   saveCustomCards(cards);
   document.getElementById('customRu').value='';
   document.getElementById('customDe').value='';
   document.getElementById('customMn').value='';
+  document.getElementById('customAddBtn').innerHTML='+ Hinzuf\u00fcgen';
+  document.getElementById('customCancelEdit').style.display='none';
   renderCustomList();
+}
+function editCustomCard(idx){
+  const cards=getCustomCards();const c=cards[idx];if(!c)return;
+  document.getElementById('customRu').value=c.m;
+  document.getElementById('customDe').value=c.t;
+  document.getElementById('customMn').value=c.mn||'';
+  _customEditIdx=idx;
+  document.getElementById('customAddBtn').innerHTML='\u2713 Speichern';
+  document.getElementById('customCancelEdit').style.display='block';
+  document.getElementById('customRu').focus();
+  try{document.getElementById('scCustom').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+}
+function cancelCustomEdit(){
+  _customEditIdx=-1;
+  document.getElementById('customRu').value='';
+  document.getElementById('customDe').value='';
+  document.getElementById('customMn').value='';
+  document.getElementById('customAddBtn').innerHTML='+ Hinzuf\u00fcgen';
+  document.getElementById('customCancelEdit').style.display='none';
 }
 
 function deleteCustomCard(idx){
   if(!confirm('Diese Karte l\xf6schen?'))return;
-  const cards=getCustomCards();cards.splice(idx,1);saveCustomCards(cards);renderCustomList();
+  const cards=getCustomCards();cards.splice(idx,1);saveCustomCards(cards);
+  if(_customEditIdx===idx)cancelCustomEdit();
+  renderCustomList();
 }
 
 function renderCustomList(){
@@ -5195,7 +5262,10 @@ function renderCustomList(){
   cards.forEach((card,idx)=>{
     const row=document.createElement('div');
     row.style.cssText='display:flex;align-items:center;gap:.75rem;padding:.65rem .9rem;background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:.4rem;';
-    row.innerHTML='<div style="flex:1;"><div style="font-size:.9rem;font-weight:700;color:var(--text);">'+card.m+'</div><div style="font-size:.78rem;color:var(--text3);">'+card.t+(card.mn?' \u2014 '+card.mn:'')+'</div></div><button onclick="deleteCustomCard('+idx+')" style="background:var(--red2);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:var(--r-sm);padding:.3rem .6rem;font-size:.75rem;cursor:pointer;font-weight:700;">\u00d7</button>';
+    row.innerHTML='<button onclick="spk(\''+card.m.replace(/'/g,"\\'")+'\')" title="Anh\u00f6ren" style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r-sm);padding:.3rem .55rem;font-size:.85rem;cursor:pointer;">&#128266;</button>'+
+      '<div style="flex:1;"><div style="font-size:.9rem;font-weight:700;color:var(--text);">'+card.m+'</div><div style="font-size:.78rem;color:var(--text3);">'+card.t+(card.mn?' \u2014 '+card.mn:'')+'</div></div>'+
+      '<button onclick="editCustomCard('+idx+')" title="Bearbeiten" style="background:var(--glass);border:1px solid var(--border);color:var(--cyan);border-radius:var(--r-sm);padding:.3rem .55rem;font-size:.8rem;cursor:pointer;">&#9998;</button>'+
+      '<button onclick="deleteCustomCard('+idx+')" title="L\u00f6schen" style="background:var(--red2);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:var(--r-sm);padding:.3rem .6rem;font-size:.75rem;cursor:pointer;font-weight:700;">\u00d7</button>';
     list.appendChild(row);
   });
 }
