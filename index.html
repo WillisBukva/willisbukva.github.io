@@ -541,6 +541,7 @@ Noch keine eigenen Vokabeln.<br>Füge deine ersten Karten hinzu!
     <div id="spkSub" style="font-size:.78rem;color:var(--text2);margin-bottom:.9rem;"></div>
     <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:.8rem;">
       <button class="btn sm" onclick="spkPlayWord()">&#128266; Vorsprechen</button>
+      <button class="btn sm" onclick="if(cb[spkIdx])spkSlow(cb[spkIdx].m)">&#128034; Langsam</button>
       <button class="btn sm" id="spkMicBtn" onclick="startSpkMic()">&#127908; Nachsprechen</button>
     </div>
     <div id="spkRes" style="display:none;padding:.5rem .7rem;border-radius:var(--r-sm);margin-bottom:.5rem;font-size:.82rem;"></div>
@@ -1771,11 +1772,18 @@ const STORIES=[
 ];
 
 const DLG=[
-  {ai:"\u041f\u0440\u0438\u0432\u0435\u0442! \u041a\u0430\u043a \u0442\u0435\u0431\u044f \u0437\u043e\u0432\u0443\u0442?",p:"Antworte: Ich hei\xdfe [Name]",h:"\u041c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442 ...",a:"\u043c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442"},
-  {ai:"\u041e\u0442\u043a\u0443\u0434\u0430 \u0442\u044b?",p:"Antworte: Ich komme aus Deutschland",h:"\u042f \u0438\u0437 \u0413\u0435\u0440\u043c\u0430\u043d\u0438\u0438",a:"\u044f \u0438\u0437"},
-  {ai:"\u041a\u0430\u043a \u0434\u0435\u043b\u0430?",p:"Antworte: Gut, danke",h:"\u0425\u043e\u0440\u043e\u0448\u043e, \u0441\u043f\u0430\u0441\u0438\u0431\u043e",a:"\u0445\u043e\u0440\u043e\u0448\u043e"},
-  {ai:"\u0422\u044b \u0433\u043e\u0432\u043e\u0440\u0438\u0448\u044c \u043f\u043e-\u0440\u0443\u0441\u0441\u043a\u0438?",p:"Antworte: Ja, ein bisschen",h:"\u0414\u0430, \u043d\u0435\u043c\u043d\u043e\u0433\u043e",a:"\u0434\u0430"},
-  {ai:"\u0427\u0442\u043e \u0442\u044b \u0434\u0435\u043b\u0430\u0435\u0448\u044c?",p:"Antworte: Ich lerne Russisch",h:"\u042f \u0443\u0447\u0443 \u0440\u0443\u0441\u0441\u043a\u0438\u0439 \u044f\u0437\u044b\u043a",a:"\u0443\u0447\u0443"}
+  {ai:"\u041f\u0440\u0438\u0432\u0435\u0442! \u041a\u0430\u043a \u0442\u0435\u0431\u044f \u0437\u043e\u0432\u0443\u0442?",aiDe:"Hallo! Wie hei\u00dft du?",p:"Antworte: Ich hei\u00dfe [Name]",h:"\u041c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442 \u0410\u043d\u043d\u0430.",a:"\u043c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442"},
+  {ai:"\u041e\u0442\u043a\u0443\u0434\u0430 \u0442\u044b?",aiDe:"Woher kommst du?",p:"Antworte: Ich komme aus Deutschland",h:"\u042f \u0438\u0437 \u0413\u0435\u0440\u043c\u0430\u043d\u0438\u0438.",a:"\u0438\u0437"},
+  {ai:"\u041a\u0430\u043a \u0434\u0435\u043b\u0430?",aiDe:"Wie geht's?",p:"Antworte: Gut, danke",h:"\u0425\u043e\u0440\u043e\u0448\u043e, \u0441\u043f\u0430\u0441\u0438\u0431\u043e.",a:"\u0445\u043e\u0440\u043e\u0448\u043e"},
+  {ai:"\u0422\u044b \u0433\u043e\u0432\u043e\u0440\u0438\u0448\u044c \u043f\u043e-\u0440\u0443\u0441\u0441\u043a\u0438?",aiDe:"Sprichst du Russisch?",p:"Antworte: Ja, ein bisschen",h:"\u0414\u0430, \u043d\u0435\u043c\u043d\u043e\u0433\u043e.",a:"\u0434\u0430"},
+  {ai:"\u0427\u0442\u043e \u0442\u044b \u0434\u0435\u043b\u0430\u0435\u0448\u044c?",aiDe:"Was machst du?",p:"Antworte: Ich lerne Russisch",h:"\u042f \u0443\u0447\u0443 \u0440\u0443\u0441\u0441\u043a\u0438\u0439 \u044f\u0437\u044b\u043a.",a:"\u0443\u0447\u0443"},
+  {ai:"\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u0442\u0435\u0431\u0435 \u043b\u0435\u0442?",aiDe:"Wie alt bist du?",p:"Antworte mit deinem Alter",h:"\u041c\u043d\u0435 \u0434\u0432\u0430\u0434\u0446\u0430\u0442\u044c \u043b\u0435\u0442.",a:"\u043c\u043d\u0435"},
+  {ai:"\u0413\u0434\u0435 \u0442\u044b \u0436\u0438\u0432\u0451\u0448\u044c?",aiDe:"Wo wohnst du?",p:"Antworte: Ich wohne in Berlin",h:"\u042f \u0436\u0438\u0432\u0443 \u0432 \u0411\u0435\u0440\u043b\u0438\u043d\u0435.",a:"\u0436\u0438\u0432\u0443"},
+  {ai:"\u0427\u0442\u043e \u0442\u044b \u043b\u044e\u0431\u0438\u0448\u044c \u0435\u0441\u0442\u044c?",aiDe:"Was isst du gern?",p:"Antworte: Ich mag Suppe",h:"\u042f \u043b\u044e\u0431\u043b\u044e \u0441\u0443\u043f.",a:"\u043b\u044e\u0431\u043b\u044e"},
+  {ai:"\u0425\u043e\u0447\u0435\u0448\u044c \u043a\u043e\u0444\u0435 \u0438\u043b\u0438 \u0447\u0430\u0439?",aiDe:"M\u00f6chtest du Kaffee oder Tee?",p:"W\u00e4hle eins",h:"\u042f \u0445\u043e\u0447\u0443 \u043a\u043e\u0444\u0435.",a:"\u0445\u043e\u0447\u0443"},
+  {ai:"\u041a\u043e\u0433\u0434\u0430 \u0442\u044b \u043f\u0440\u0438\u0434\u0451\u0448\u044c?",aiDe:"Wann kommst du?",p:"Antworte: Ich komme morgen",h:"\u042f \u043f\u0440\u0438\u0434\u0443 \u0437\u0430\u0432\u0442\u0440\u0430.",a:"\u043f\u0440\u0438\u0434\u0443"},
+  {ai:"\u0427\u0442\u043e \u0442\u044b \u0434\u0435\u043b\u0430\u043b \u0432\u0447\u0435\u0440\u0430?",aiDe:"Was hast du gestern gemacht?",p:"Antworte: Ich war zu Hause",h:"\u0412\u0447\u0435\u0440\u0430 \u044f \u0431\u044b\u043b \u0434\u043e\u043c\u0430.",a:"\u0431\u044b\u043b"},
+  {ai:"\u0414\u043e \u0441\u0432\u0438\u0434\u0430\u043d\u0438\u044f!",aiDe:"Auf Wiedersehen!",p:"Verabschiede dich",h:"\u0414\u043e \u0441\u0432\u0438\u0434\u0430\u043d\u0438\u044f! \u0414\u043e \u0437\u0430\u0432\u0442\u0440\u0430!",a:"\u0441\u0432\u0438\u0434\u0430\u043d\u0438\u044f"}
 ];
 
 const KYR=['\u0410','\u0411','\u0412','\u0413','\u0414','\u0415','\u0401','\u0416','\u0417','\u0418','\u0419','\u041a','\u041b','\u041c','\u041d','\u041e','\u041f','\u0420','\u0421','\u0422','\u0423','\u0424','\u0425','\u0426','\u0427','\u0428','\u0429','\u042a','\u042b','\u042c','\u042d','\u042e','\u042f'];
@@ -2874,6 +2882,7 @@ function startDailyStep(){
   if(((us2[cu].progress&&us2[cu].progress['weekdays'])||0)>0){games.push(startOrderTrainer);games.push(startTodayQuiz);}
   if(((us2[cu].progress&&us2[cu].progress['grammar'])||0)>0||((us2[cu].progress&&us2[cu].progress['grammar_faelle'])||0)>0)games.push(function(){startGrammarDrill();});
   if(((us2[cu].progress&&us2[cu].progress['listening'])||0)>0)games.push(startListenComprehension);
+  if(navigator.onLine&&micRec&&((us2[cu].progress&&us2[cu].progress['speaking'])||0)>0)games.push(startDialogMode);
   games[day%games.length]();
 }
 function showDailySession(){
@@ -3029,7 +3038,7 @@ function showDash(){
       const rec=getSecRecommendation(sec.id,d);
       const row=document.createElement('div');row.className='pfad-row glass';
       if(rec)row.style.opacity='.55';
-      row.onclick=sec.id==='custom'?()=>showCustomScreen():sec.id==='grammar'?()=>showGrammarMenu():sec.id==='alphabet'?()=>showAlphabetMenu():sec.id==='vocabulary'?()=>showVocabMenu():sec.id==='numbers'?()=>showNumbersMenu():sec.id==='colors'?()=>showColorsMenu():sec.id==='weekdays'?()=>showWeekdaysMenu():sec.id==='listening'?()=>showListeningMenu():()=>startSec(sec.id);
+      row.onclick=sec.id==='custom'?()=>showCustomScreen():sec.id==='grammar'?()=>showGrammarMenu():sec.id==='alphabet'?()=>showAlphabetMenu():sec.id==='vocabulary'?()=>showVocabMenu():sec.id==='numbers'?()=>showNumbersMenu():sec.id==='colors'?()=>showColorsMenu():sec.id==='weekdays'?()=>showWeekdaysMenu():sec.id==='listening'?()=>showListeningMenu():sec.id==='speaking'?()=>showSpeakingMenu():()=>startSec(sec.id);
       const nF=data.length?doneN%data.length+1:1,nT=data.length?Math.min(doneN%data.length+cfg.bs,data.length):0;
       row.innerHTML='<div class="pfad-icon">'+sec.icon+'</div><div class="pfad-info"><h3>'+sec.title+(bdg>0?' <span style="font-size:.63rem;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:.08rem .32rem;border-radius:20px;">'+bdg+' WH</span>':'')+'</h3><p>'+sec.desc+'</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctN+'%"></div></div><div class="prog-lbl">'+(rec?'&#128161; Tipp: erst '+rec:doneN+' / '+data.length+' gelernt'+(doneN>0?' \xb7 N\xe4chste: '+nF+'\u2013'+nT:''))+'</div></div><div class="pfad-arr">'+(doneN>0?'&#8635;':'&#9654;')+'</div>';
       pfEl.appendChild(row);
@@ -3463,10 +3472,10 @@ function showTimeUp(mins){
 function prefetchAudio(){
   try{
     if(!navigator.onLine)return;
-    if(_lg('ru_audio_prefetched')==='v9')return;
+    if(_lg('ru_audio_prefetched')==='v10')return;
     fetch(AUDIO_BASE+'manifest.json').then(r=>r.json()).then(async files=>{
       for(let i=0;i<files.length;i++){try{await fetch(AUDIO_BASE+files[i]);}catch(e){return;}}
-      _ls('ru_audio_prefetched','v9');
+      _ls('ru_audio_prefetched','v10');
     }).catch(()=>{});
   }catch(e){}
 }
@@ -3957,6 +3966,88 @@ function showAlphabetFinish(){
 
 // ===== SPRECHEN =====
 let spkIdx=0,spkCorrect=false;
+
+// ── DIALOG-MODUS ──────────────────────────────────────────────────
+// Die App stellt eine Frage (Audio+Text), du antwortest per Mikrofon
+// oder lässt dir die Musterantwort zeigen/vorsprechen.
+function startDialogMode(){
+  var items=(typeof DLG!=='undefined'?DLG:[]).slice();
+  if(!items.length){alert('Keine Dialoge vorhanden!');return;}
+  var di=0,score=0;
+  var ov=document.createElement('div');ov.className='levelup-overlay';document.body.appendChild(ov);
+  function render(){
+    if(di>=items.length){
+      var xp=score*3;var us=GU();if(us[cu]){us[cu].stats.totalXp=(us[cu].stats.totalXp||0)+xp;if(us[cu].progress)us[cu].progress.speaking=(us[cu].progress.speaking||0);SU(us);}
+      ov.innerHTML='<div class="levelup-box"><div style="font-size:2rem;margin-bottom:.4rem;">'+(score>=items.length-2?'&#127881;':'&#128172;')+'</div><div style="font-weight:800;font-size:1.1rem;margin-bottom:.3rem;">Dialog geschafft!</div><div style="font-size:.82rem;color:var(--text3);margin-bottom:.3rem;">'+score+' von '+items.length+' selbst beantwortet</div><div style="font-size:.85rem;color:var(--cyan);margin-bottom:1rem;">+'+xp+' XP</div><button class="btn primary" style="width:100%;margin-bottom:.5rem;" id="dgAgain">&#128172; Nochmal</button><button class="btn" style="width:100%;background:var(--glass);border-color:var(--border);" id="dgDone">Fertig</button></div>';
+      ov.querySelector('#dgAgain').onclick=function(){ov.remove();startDialogMode();};
+      ov.querySelector('#dgDone').onclick=function(){ov.remove();showDash();};
+      return;
+    }
+    var d=items[di];
+    var online=navigator.onLine&&micRec;
+    ov.innerHTML='<div class="levelup-box" style="max-width:360px;width:94%;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem;"><span style="font-size:.75rem;color:var(--text3);">&#128172; Dialog &middot; '+(di+1)+'/'+items.length+'</span><button id="dgExit" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.05rem;font-family:inherit;padding:0 .2rem;">&#10005;</button></div>'+
+      '<div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r-sm);padding:.8rem;margin-bottom:.7rem;text-align:left;">'+
+        '<div style="font-size:.65rem;color:var(--text3);margin-bottom:.2rem;">&#129302; fragt dich:</div>'+
+        '<div style="font-size:1.1rem;font-weight:800;color:var(--cyan);">'+d.ai+'</div>'+
+        '<div style="font-size:.78rem;color:var(--text3);font-style:italic;">'+(d.aiDe||'')+'</div>'+
+        '<div style="margin-top:.4rem;"><button class="btn sm" id="dgPlay">&#128266; Anhören</button> <button class="btn sm" id="dgSlow">&#128034; Langsam</button></div>'+
+      '</div>'+
+      '<div style="font-size:.85rem;font-weight:700;margin-bottom:.6rem;">&#9997;&#65039; '+d.p+'</div>'+
+      (online?'<button class="btn primary" style="width:100%;margin-bottom:.5rem;" id="dgMic">&#127908; Antwort sprechen</button>':'<div style="font-size:.72rem;color:#f97316;margin-bottom:.5rem;">Mikrofon offline nicht verfügbar — schau dir die Musterantwort an.</div>')+
+      '<button class="btn" style="width:100%;margin-bottom:.5rem;border-color:rgba(0,229,200,.3);" id="dgReveal">&#128172; Musterantwort zeigen</button>'+
+      '<div id="dgRes" style="min-height:1.4rem;font-size:.85rem;font-weight:600;text-align:center;"></div>'+
+      '<div id="dgNextWrap" style="display:none;margin-top:.4rem;"><button class="btn primary" style="width:100%;" id="dgNext">Weiter &#8594;</button></div>'+
+      '</div>';
+    ov.querySelector('#dgExit').onclick=function(){ov.remove();};
+    ov.querySelector('#dgPlay').onclick=function(){spk(d.ai);};
+    ov.querySelector('#dgSlow').onclick=function(){spkSlow(d.ai);};
+    setTimeout(function(){spk(d.ai);},400);
+    function reveal(spoken,ok){
+      var res=ov.querySelector('#dgRes');
+      if(ok){score++;res.style.color='#22c55e';res.innerHTML='&#10003; Super! &mdash; '+d.h;}
+      else if(spoken){res.style.color='#f97316';res.innerHTML='Du sagtest: „'+spoken+'"<br><span style="color:var(--cyan);">Muster: '+d.h+'</span>';}
+      else{res.style.color='var(--text3)';res.innerHTML='Musterantwort: <span style="color:var(--cyan);font-weight:700;">'+d.h+'</span>';}
+      spk(d.h);
+      ov.querySelector('#dgNextWrap').style.display='block';
+    }
+    var revBtn=ov.querySelector('#dgReveal');if(revBtn)revBtn.onclick=function(){reveal(null,false);};
+    var micBtn=ov.querySelector('#dgMic');
+    if(micBtn)micBtn.onclick=function(){
+      if(!navigator.onLine){alert('Die Spracherkennung braucht Internet.');return;}
+      micBtn.classList.add('listening');micBtn.innerHTML='&#127908; Höre zu...';
+      micRec.onresult=function(e){
+        var spoken=e.results[0][0].transcript.toLowerCase().trim();
+        var ok=spoken.indexOf(d.a.toLowerCase())>=0||levenshteinSim(spoken,d.h.toLowerCase().replace(/[.!?]/g,''))>=0.55;
+        micBtn.classList.remove('listening');micBtn.innerHTML='&#127908; Antwort sprechen';
+        reveal(spoken,ok);
+      };
+      micRec.onerror=function(){micBtn.classList.remove('listening');micBtn.innerHTML='&#127908; Antwort sprechen';};
+      micRec.onend=function(){micBtn.classList.remove('listening');if(micBtn.innerHTML.indexOf('Höre')>-1)micBtn.innerHTML='&#127908; Antwort sprechen';};
+      try{micRec.start();}catch(err){micBtn.classList.remove('listening');micBtn.innerHTML='&#127908; Antwort sprechen';}
+    };
+    ov.querySelector('#dgNext').onclick=function(){di++;render();};
+  }
+  render();
+}
+
+function showSpeakingMenu(){
+  var us=GU();
+  var data=getDifficultyPool(C['speaking']||[],cd,'speaking');
+  var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress['speaking']||0,data.length):0;
+  var ov=document.createElement('div');ov.className='levelup-overlay';
+  var inner='<div class="levelup-box" style="max-width:360px;width:94%;padding:1.5rem 1.2rem;">';
+  inner+='<div style="font-size:1.1rem;font-weight:900;margin-bottom:.3rem;color:var(--cyan);">&#127908; Sprechen</div>';
+  inner+='<div style="font-size:.75rem;color:var(--text3);margin-bottom:1rem;">'+done+' / '+data.length+' geübt</div>';
+  inner+='<button class="btn primary" style="width:100%;margin-bottom:.5rem;" id="spPron">&#127908; Aussprache üben (Nachsprechen)</button>';
+  inner+='<button class="btn" style="width:100%;margin-bottom:.8rem;border-color:rgba(0,229,200,.35);color:var(--cyan);" id="spDlg">&#128172; Dialog (antworten)</button>';
+  inner+='<button class="btn" style="width:100%;background:var(--glass);border-color:var(--border);font-size:.82rem;" id="spCancel">Abbrechen</button>';
+  inner+='</div>';
+  ov.innerHTML=inner;document.body.appendChild(ov);
+  ov.querySelector('#spPron').onclick=function(){ov.remove();startSec('speaking');};
+  ov.querySelector('#spDlg').onclick=function(){ov.remove();startDialogMode();};
+  ov.querySelector('#spCancel').onclick=function(){ov.remove();};
+}
 
 function loadSpkCard(){
   if(spkIdx>=cb.length){showDash();return;}

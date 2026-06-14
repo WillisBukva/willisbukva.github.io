@@ -1,0 +1,16 @@
+const fs = require('fs'); const path = require('path'); const vm = require('vm');
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const m = html.match(/<script>([\s\S]*?)<\/script>/);
+const noop = () => {}; const fakeEl = new Proxy({}, { get: (t, p) => (p === 'style' ? {} : noop), set: () => true });
+const sb = { window: { addEventListener: noop }, document: { addEventListener: noop, getElementById: () => fakeEl, querySelectorAll: () => [], querySelector: () => fakeEl, createElement: () => fakeEl, body: { appendChild: noop } }, navigator: { onLine: true }, localStorage: { getItem: () => null, setItem: noop, removeItem: noop }, speechSynthesis: undefined, alert: noop, confirm: () => false, console, setTimeout: noop, setInterval: noop, Audio: function () { return { play: noop }; } };
+vm.createContext(sb);
+vm.runInContext(m[1] + ';globalThis.X={C:C,DLG:typeof DLG!=="undefined"?DLG:[]};', sb);
+const a = sb.X.C.speaking || [];
+console.log('speaking gesamt:', a.length);
+const dCount = {}; a.forEach(x => { var d = x.d || '?'; dCount[d] = (dCount[d] || 0) + 1; });
+console.log('Schwierigkeit (d):', JSON.stringify(dCount));
+console.log('ohne d:', a.filter(x => !x.d).length, '| ohne e(Translit):', a.filter(x => !x.e).length, '| ctx:', a.reduce((s,x)=>s+((x.ctx||[]).length),0));
+console.log('Sätze (mit Leerzeichen):', a.filter(x => x.m && x.m.indexOf(' ') > 0).length);
+console.log('\nBeispiele d=3/4:'); a.filter(x => x.d >= 3).slice(0, 8).forEach(x => console.log('  d' + x.d + ' | ' + x.m + ' = ' + x.t));
+console.log('\n--- DLG (Dialoge):', sb.X.DLG.length);
+sb.X.DLG.forEach((d, i) => console.log('  ' + i + ' | ai="' + d.ai + '" | p="' + d.p + '" | a="' + d.a + '"'));

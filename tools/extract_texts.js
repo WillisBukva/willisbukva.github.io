@@ -39,7 +39,7 @@ for (const sec in C) (C[sec] || []).forEach(it => {
 const GAP = X.GAP_DATA || {};
 for (const l in GAP) ['s1', 's2', 's3', 's4'].forEach(k => { if (GAP[l][k] && GAP[l][k].full) texts.add(GAP[l][k].full.trim()); });
 (X.STORIES || []).forEach(st => texts.add(st.text.map(p => p.ru).join('').trim()));
-(X.DLG || []).forEach(d => { if (d.ai) texts.add(d.ai.trim()); });
+(X.DLG || []).forEach(d => { if (d.ai) texts.add(d.ai.trim()); if (d.h) texts.add(d.h.trim()); });
 const TV = X.THEME_VOCAB || {};
 for (const t in TV) TV[t].forEach(it => { if (it.m) texts.add(it.m.trim()); });
 // Grammatik-Trainer: vollständige Sätze (Lücke mit richtiger Antwort gefüllt) werden vorgesprochen
