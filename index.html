@@ -2254,6 +2254,70 @@ function startColorTrainer(){
   render();
 }
 
+// ── HÖREN ─────────────────────────────────────────────────────────
+// Hörverständnis: Satz hören → richtige deutsche Bedeutung aus 4 wählen
+function startListenComprehension(){
+  var pool=(C['listening']||[]).filter(function(x){return x.m&&x.t;});
+  if(pool.length<4){alert('Zu wenige Hör-Inhalte!');return;}
+  var qs=[];
+  for(var i=0;i<10;i++){
+    var target=pool[Math.floor(Math.random()*pool.length)];
+    var others=pool.filter(function(x){return x.t!==target.t;}).sort(function(){return Math.random()-.5;}).slice(0,3);
+    qs.push({t:target,opts:[target].concat(others).sort(function(){return Math.random()-.5;})});
+  }
+  var qi=0,score=0;
+  var ov=document.createElement('div');ov.className='levelup-overlay';document.body.appendChild(ov);
+  function render(){
+    if(qi>=qs.length){
+      var xp=score*2;var us=GU();if(us[cu]){us[cu].stats.totalXp=(us[cu].stats.totalXp||0)+xp;SU(us);}
+      ov.innerHTML='<div class="levelup-box"><div style="font-size:2rem;margin-bottom:.4rem;">'+(score>=8?'&#127881;':'&#127911;')+'</div><div style="font-weight:800;font-size:1.1rem;margin-bottom:.3rem;">'+score+' von '+qs.length+' richtig!</div><div style="font-size:.85rem;color:var(--cyan);margin-bottom:1rem;">+'+xp+' XP</div><button class="btn primary" style="width:100%;margin-bottom:.5rem;" id="lcAgain">&#127911; Nochmal</button><button class="btn" style="width:100%;background:var(--glass);border-color:var(--border);" id="lcDone">Fertig</button></div>';
+      ov.querySelector('#lcAgain').onclick=function(){ov.remove();startListenComprehension();};
+      ov.querySelector('#lcDone').onclick=function(){ov.remove();showDash();};
+      return;
+    }
+    var q=qs[qi];
+    var btns=q.opts.map(function(o){return '<button class="lc-opt" data-t="'+o.t.replace(/"/g,'&quot;')+'" style="display:block;width:100%;margin-bottom:.45rem;padding:.65rem;font-size:.95rem;font-weight:700;background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;color:var(--text);font-family:inherit;">'+o.t+'</button>';}).join('');
+    ov.innerHTML='<div class="levelup-box" style="max-width:350px;width:94%;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;"><span style="font-size:.75rem;color:var(--text3);">&#127911; Hörverständnis &middot; '+(qi+1)+'/'+qs.length+'</span><button id="lcExit" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.05rem;font-family:inherit;padding:0 .2rem;">&#10005;</button></div>'+
+      '<div style="font-size:.9rem;font-weight:700;margin-bottom:.7rem;">Was hörst du? Wähle die Bedeutung:</div>'+
+      '<div style="display:flex;gap:.5rem;justify-content:center;margin-bottom:.9rem;"><button class="btn sm" id="lcPlay">&#128266; Abspielen</button><button class="btn sm" id="lcSlow">🐢 Langsam</button></div>'+
+      btns+'<div id="lcFb" style="min-height:1.3rem;font-size:.82rem;font-weight:600;margin-top:.4rem;text-align:center;"></div></div>';
+    ov.querySelector('#lcExit').onclick=function(){ov.remove();};
+    ov.querySelector('#lcPlay').onclick=function(){spk(q.t.m);};
+    ov.querySelector('#lcSlow').onclick=function(){spkSlow(q.t.m);};
+    setTimeout(function(){spk(q.t.m);},350);
+    ov.querySelectorAll('.lc-opt').forEach(function(b){
+      b.onclick=function(){
+        var ok=b.getAttribute('data-t')===q.t.t;var fb=ov.querySelector('#lcFb');
+        ov.querySelectorAll('.lc-opt').forEach(function(x){x.disabled=true;if(x.getAttribute('data-t')===q.t.t){x.style.borderColor='#22c55e';x.style.color='#22c55e';}});
+        if(ok){score++;fb.style.color='#22c55e';fb.innerHTML='&#10003; '+q.t.m+' = '+q.t.t;}
+        else{b.style.borderColor='#ef4444';b.style.color='#ef4444';fb.style.color='#ef4444';fb.innerHTML='&#10007; '+q.t.m+' = '+q.t.t;}
+        setTimeout(function(){qi++;render();},ok?1100:2000);
+      };
+    });
+  }
+  render();
+}
+
+function showListeningMenu(){
+  var us=GU();
+  var data=getDifficultyPool(C['listening']||[],cd,'listening');
+  var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress['listening']||0,data.length):0;
+  var ov=document.createElement('div');ov.className='levelup-overlay';
+  var inner='<div class="levelup-box" style="max-width:360px;width:94%;padding:1.5rem 1.2rem;">';
+  inner+='<div style="font-size:1.1rem;font-weight:900;margin-bottom:.3rem;color:var(--cyan);">&#127911; Hören & Verstehen</div>';
+  inner+='<div style="font-size:.75rem;color:var(--text3);margin-bottom:1rem;">'+done+' / '+data.length+' gelernt</div>';
+  inner+='<button class="btn primary" style="width:100%;margin-bottom:.5rem;" id="lsListen">&#9654; Hören & Tippen</button>';
+  inner+='<button class="btn" style="width:100%;margin-bottom:.5rem;border-color:rgba(0,229,200,.35);color:var(--cyan);" id="lsComp">&#127911; Hörverständnis (Bedeutung wählen)</button>';
+  inner+='<button class="btn" style="width:100%;margin-bottom:.8rem;border-color:rgba(251,191,36,.4);color:#fbbf24;" id="lsDiktat">&#9999;&#65039; Diktat (hören & schreiben)</button>';
+  inner+='<button class="btn" style="width:100%;background:var(--glass);border-color:var(--border);font-size:.82rem;" id="lsCancel">Abbrechen</button>';
+  inner+='</div>';
+  ov.innerHTML=inner;document.body.appendChild(ov);
+  ov.querySelector('#lsListen').onclick=function(){ov.remove();startSec('listening');};
+  ov.querySelector('#lsComp').onclick=function(){ov.remove();startListenComprehension();};
+  ov.querySelector('#lsDiktat').onclick=function(){ov.remove();cs='listening';startDiktatMode(getDifficultyPool(C['listening']||[],cd,'listening'));};
+  ov.querySelector('#lsCancel').onclick=function(){ov.remove();};
+}
+
 function showColorsMenu(){
   var us=GU();
   var data=getDifficultyPool(C['colors']||[],cd,'colors');
@@ -2809,6 +2873,7 @@ function startDailyStep(){
   if(((us2[cu].progress&&us2[cu].progress['colors'])||0)>0)games.push(startColorTrainer);
   if(((us2[cu].progress&&us2[cu].progress['weekdays'])||0)>0){games.push(startOrderTrainer);games.push(startTodayQuiz);}
   if(((us2[cu].progress&&us2[cu].progress['grammar'])||0)>0||((us2[cu].progress&&us2[cu].progress['grammar_faelle'])||0)>0)games.push(function(){startGrammarDrill();});
+  if(((us2[cu].progress&&us2[cu].progress['listening'])||0)>0)games.push(startListenComprehension);
   games[day%games.length]();
 }
 function showDailySession(){
@@ -2964,7 +3029,7 @@ function showDash(){
       const rec=getSecRecommendation(sec.id,d);
       const row=document.createElement('div');row.className='pfad-row glass';
       if(rec)row.style.opacity='.55';
-      row.onclick=sec.id==='custom'?()=>showCustomScreen():sec.id==='grammar'?()=>showGrammarMenu():sec.id==='alphabet'?()=>showAlphabetMenu():sec.id==='vocabulary'?()=>showVocabMenu():sec.id==='numbers'?()=>showNumbersMenu():sec.id==='colors'?()=>showColorsMenu():sec.id==='weekdays'?()=>showWeekdaysMenu():()=>startSec(sec.id);
+      row.onclick=sec.id==='custom'?()=>showCustomScreen():sec.id==='grammar'?()=>showGrammarMenu():sec.id==='alphabet'?()=>showAlphabetMenu():sec.id==='vocabulary'?()=>showVocabMenu():sec.id==='numbers'?()=>showNumbersMenu():sec.id==='colors'?()=>showColorsMenu():sec.id==='weekdays'?()=>showWeekdaysMenu():sec.id==='listening'?()=>showListeningMenu():()=>startSec(sec.id);
       const nF=data.length?doneN%data.length+1:1,nT=data.length?Math.min(doneN%data.length+cfg.bs,data.length):0;
       row.innerHTML='<div class="pfad-icon">'+sec.icon+'</div><div class="pfad-info"><h3>'+sec.title+(bdg>0?' <span style="font-size:.63rem;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:.08rem .32rem;border-radius:20px;">'+bdg+' WH</span>':'')+'</h3><p>'+sec.desc+'</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctN+'%"></div></div><div class="prog-lbl">'+(rec?'&#128161; Tipp: erst '+rec:doneN+' / '+data.length+' gelernt'+(doneN>0?' \xb7 N\xe4chste: '+nF+'\u2013'+nT:''))+'</div></div><div class="pfad-arr">'+(doneN>0?'&#8635;':'&#9654;')+'</div>';
       pfEl.appendChild(row);
@@ -3110,6 +3175,31 @@ function loadCard(){
   const gi=document.getElementById('gapInline');if(gi)gi.style.display='none';
   const btnAr=document.getElementById('btnAnhoeren');if(btnAr)btnAr.setAttribute('onclick','spk(cb[ci].m)');
   const nbr=document.getElementById('nextBtn');if(nbr){nbr.disabled=false;nbr.style.opacity='';nbr.style.cursor='';}
+  setupListenFirst(item);
+}
+
+// Hör-Pfad: Text verstecken, automatisch abspielen, Langsam- + Auflösen-Button
+function setupListenFirst(item){
+  var micArea=document.getElementById('micArea');
+  // Aufräumen: evtl. vorhandene Hör-Buttons entfernen
+  ['llSlowBtn','llRevealBtn'].forEach(function(id){var b=document.getElementById(id);if(b)b.remove();});
+  var main=document.getElementById('cMain'),sub=document.getElementById('cSub'),ex=document.getElementById('cEx'),tr=document.getElementById('cTrans');
+  if(cs!=='listening'){
+    [main,sub,ex,tr].forEach(function(el){if(el)el.style.visibility='';});
+    return;
+  }
+  // verstecken: russischer Text + Transliteration + Beispiel (Bedeutung cTrans bleibt sichtbar)
+  if(main){main.dataset.full=item.m;main.textContent='🎧';}
+  if(sub)sub.style.visibility='hidden';
+  if(ex)ex.style.visibility='hidden';
+  if(tr)tr.style.visibility='';
+  if(micArea){
+    var slow=document.createElement('button');slow.id='llSlowBtn';slow.className='btn sm';slow.innerHTML='🐢 Langsam';slow.onclick=function(){spkSlow(item.m);};
+    var rev=document.createElement('button');rev.id='llRevealBtn';rev.className='btn sm';rev.innerHTML='👁 Text zeigen';
+    rev.onclick=function(){if(main){main.textContent=item.m;}if(sub)sub.style.visibility='';if(ex)ex.style.visibility='';rev.style.display='none';};
+    micArea.appendChild(slow);micArea.appendChild(rev);
+  }
+  setTimeout(function(){spk(item.m);},450);
 }
 
 function getGapChoices(correct){
@@ -3304,22 +3394,25 @@ let _curAudio=null;
 // FNV-1a 32-Bit über UTF-8-Bytes — identisch zu fnv1a() in tools/generate_audio.py
 function audioKey(t){let h=0x811c9dc5;const b=new TextEncoder().encode(t);for(let i=0;i<b.length;i++){h^=b[i];h=Math.imul(h,0x01000193)>>>0;}return h.toString(16).padStart(8,'0');}
 function _lv(){try{const vs=speechSynthesis.getVoices();if(vs&&vs.length>0)_voices=vs;}catch(e){}}
-function spk(txt){
+function spk(txt,rate){
   if(!txt||typeof txt!=='string'||!txt.trim())return;
   const t=txt.trim();
   try{if(_curAudio){_curAudio.pause();_curAudio=null;}}catch(e){}
   try{if(window.speechSynthesis)speechSynthesis.cancel();}catch(e){}
   const a=new Audio(AUDIO_BASE+audioKey(t)+'.mp3');
+  if(rate)a.playbackRate=rate;
   _curAudio=a;
-  a.onerror=function(){if(_curAudio===a){_curAudio=null;_spkSys(t);}};
-  a.play().catch(function(){if(_curAudio===a){_curAudio=null;_spkSys(t);}});
+  a.onerror=function(){if(_curAudio===a){_curAudio=null;_spkSys(t,rate);}};
+  a.play().catch(function(){if(_curAudio===a){_curAudio=null;_spkSys(t,rate);}});
 }
-function _spkSys(t){
+// Langsam abspielen (Hör-Training)
+function spkSlow(txt){spk(txt,0.6);}
+function _spkSys(t,rate){
   try{
     if(!window.speechSynthesis)return;
     if(speechSynthesis.paused){try{speechSynthesis.resume();}catch(e){}}
     speechSynthesis.cancel();
-    function _do(){try{const u=new SpeechSynthesisUtterance(t);u.lang='ru-RU';u.rate=0.8;u.pitch=1;u.volume=1;const vs=speechSynthesis.getVoices();if(vs&&vs.length>0)_voices=vs;const rv=_voices.find(v=>v.lang==='ru-RU')||_voices.find(v=>v.lang.startsWith('ru'));if(rv)u.voice=rv;speechSynthesis.speak(u);}catch(e){}}
+    function _do(){try{const u=new SpeechSynthesisUtterance(t);u.lang='ru-RU';u.rate=rate?Math.max(0.4,0.8*rate):0.8;u.pitch=1;u.volume=1;const vs=speechSynthesis.getVoices();if(vs&&vs.length>0)_voices=vs;const rv=_voices.find(v=>v.lang==='ru-RU')||_voices.find(v=>v.lang.startsWith('ru'));if(rv)u.voice=rv;speechSynthesis.speak(u);}catch(e){}}
     const vs=speechSynthesis.getVoices();
     if(vs&&vs.length>0){_voices=vs;_do();}else setTimeout(()=>{_lv();_do();},300);
   }catch(e){}

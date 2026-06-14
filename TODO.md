@@ -40,7 +40,7 @@ Stand: 11.06.2026
   - [x] Inhalt ausgebaut (13.06.2026): Lesen 3→16 Karten, Mini-Geschichten 3→15, Beispielsätze für alle Top-100-Wörter (vocab_top1). Audio gesamt 1.578 Clips / 23 MB. Pipeline-Skripte: add_reading_stories.js, add_top100_sentences.js
   - [ ] Vokabeln später: Beispielsätze für Top-101…520 + Themen-Karten (ctx); mehr Dialoge (DLG 5→15) fürs Sprechen; Betonungszeichen; SRS-fällige Karten in neue Runden mischen
   - [x] Grammatik überarbeitet (13.06.2026): (1) Grammatik-Trainer mit 36 Anwendungs-Aufgaben (Lückentext: richtige Fallendung/Verbform/Possessiv wählen, mit Erklärung bei Fehler) — behebt das „Übersetze-die-Regel"-Problem; in Tages-Session-Rotation. (2) Deklinations-Tabelle (стол/книга/окно mit hervorgehobenen Endungen) auf allen 6 Fall-Karten. (3) Jede der 65 Regeln hat jetzt 2 Beispielsätze (130 total), alle vertont. Audio gesamt 1.663 / 24,3 MB
-  - [ ] Hören (78 — audio-first machen, Lernkarten zeigen das Wort als Text)
+  - [x] Hören überarbeitet (14.06.2026): (1) Audio-first-Lernkarte — russischer Text versteckt (🎧), spielt automatisch, „👁 Text zeigen" löst auf. (2) 🐢 Langsam-Button (0,6× via playbackRate, ohne neue Audios). (3) Hörverständnis-Quiz: Satz hören → Bedeutung aus 4 wählen. (4) Hören-Menü: Hören&Tippen / Hörverständnis / Diktat. In Tages-Session-Rotation.
   - [ ] Sprechen (73 — braucht Internet für Spracherkennung! Offline-Hinweis nötig)
   - [ ] Sätze (25 — Modus wählbar machen statt Zufall)
   - [ ] Lesen (nur 3 Texte!) & Mini-Geschichten (nur 3) — Inhalt ausbauen
