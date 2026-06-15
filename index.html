@@ -2813,7 +2813,7 @@ const SEC_REQS={
   grammar_pronomen:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   grammar_praepositionen:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   speaking:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
-  sentences:{sec:'vocabulary',n:15,label:'15 Vokabeln lernen'},
+  sentences:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   reading:{sec:'vocabulary',n:25,label:'25 Vokabeln lernen'}
 };
 function getSecRecommendation(secId,d){
@@ -2821,13 +2821,24 @@ function getSecRecommendation(secId,d){
   return ((d.progress&&d.progress[rq.sec])||0)>=rq.n?null:rq.label;
 }
 
-// Reiche Lern-Reihenfolge — inkl. der 520 Frequenzwörter und Grammatik-Unterthemen,
-// leicht→schwer und Wortschatz mit Fertigkeiten verzahnt
-const LEARN_ORDER=['vocabulary','numbers','colors','weekdays','vocab_top1','grammar','grammar_faelle','vocab_top2','listening','grammar_verben','speaking','vocab_top3','sentences','grammar_pronomen','vocab_top4','reading','grammar_praepositionen','vocab_top5','vocab_top6'];
+// Roter Faden der Tages-Session: Alphabet zuerst; Wörter, sobald man genug
+// Buchstaben zum Lesen hat; ab 10 Wörtern Sätze; danach Grammatik & Fertigkeiten.
+const LEARN_ORDER=['alphabet','vocabulary','numbers','colors','weekdays','vocab_top1','grammar','grammar_faelle','vocab_top2','listening','grammar_verben','speaking','vocab_top3','sentences','grammar_pronomen','vocab_top4','reading','grammar_praepositionen','vocab_top5','vocab_top6'];
+// Kapazitäts-Voraussetzungen NUR für die Tages-Session (Dashboard bleibt frei wählbar):
+const DAILY_REQS={
+  vocabulary:{sec:'alphabet',n:12},                                   // 12 Buchstaben → Wörter lesbar
+  numbers:{sec:'vocabulary',n:5},colors:{sec:'vocabulary',n:5},weekdays:{sec:'vocabulary',n:5},
+  vocab_top1:{sec:'vocabulary',n:10},vocab_top2:{sec:'vocabulary',n:10},vocab_top3:{sec:'vocabulary',n:10},vocab_top4:{sec:'vocabulary',n:10},vocab_top5:{sec:'vocabulary',n:10},vocab_top6:{sec:'vocabulary',n:10},
+  grammar:{sec:'vocabulary',n:10},grammar_faelle:{sec:'vocabulary',n:10},grammar_verben:{sec:'vocabulary',n:10},grammar_pronomen:{sec:'vocabulary',n:10},grammar_praepositionen:{sec:'vocabulary',n:10},
+  listening:{sec:'vocabulary',n:10},speaking:{sec:'vocabulary',n:10},
+  sentences:{sec:'vocabulary',n:10},                                  // 10 Wörter → Sätze bildbar
+  reading:{sec:'vocabulary',n:25}
+};
 function _secFull(id){return (C[id]||[]).length;}
 // gemeistert = Fortschritt erreicht die ganze (volle) Liste, nicht nur den Level-Ausschnitt
 function sectionMastered(d,id){var full=_secFull(id);return full===0||((d.progress&&d.progress[id])||0)>=full;}
-function eligibleSections(d){return LEARN_ORDER.filter(function(id){return _secFull(id)>0&&!getSecRecommendation(id,d)&&!sectionMastered(d,id);});}
+function dailyUnlocked(d,id){var rq=DAILY_REQS[id];if(!rq)return true;return ((d.progress&&d.progress[rq.sec])||0)>=rq.n;}
+function eligibleSections(d){return LEARN_ORDER.filter(function(id){return _secFull(id)>0&&dailyUnlocked(d,id)&&!sectionMastered(d,id);});}
 function sectionLabel(id){
   var sec=SECS.find(function(s){return s.id===id;});
   if(sec)return sec.title.replace(/^\d+\.\s*/,'');
@@ -2837,7 +2848,8 @@ function sectionLabel(id){
 function sectionIcon(id){var sec=SECS.find(function(s){return s.id===id;});if(sec)return sec.icon;if(id.indexOf('vocab_top')===0)return '&#128293;';if(id.indexOf('grammar_')===0)return '&#128209;';return '&#9654;';}
 // Menü-Einstieg (für „Hier weitermachen") — Sub-Sektionen starten direkt
 function launchSection(id){
-  if(id==='vocabulary')showVocabMenu();
+  if(id==='alphabet')showAlphabetMenu();
+  else if(id==='vocabulary')showVocabMenu();
   else if(id==='numbers')showNumbersMenu();
   else if(id==='colors')showColorsMenu();
   else if(id==='weekdays')showWeekdaysMenu();
@@ -2971,12 +2983,12 @@ function startDailyStep(){
   if(st.type==='wh'){startSRSSession();return;}
   if(st.type==='neu'){
     var us=GU(),d=us[cu];
-    if(((d.progress&&d.progress['alphabet'])||0)<(C['alphabet']||[]).length){startSec('alphabet');return;}
-    // Abwechslung: der wievielte „neu"-Schritt ist das? → andere Sektion pro Runde
+    // Roter Faden: Alphabet ist Teil der eligible-Liste (zuerst); Wörter kommen,
+    // sobald 12 Buchstaben da sind; Sätze ab 10 Wörtern usw. (DAILY_REQS)
     var neuRank=0;for(var i=0;i<idx;i++){if(p.steps[i].type==='neu')neuRank++;}
     var elig=eligibleSections(d);
     if(elig.length){startSec(elig[neuRank%elig.length]);return;}
-    startSec('vocabulary');return;
+    startSec('alphabet');return;
   }
   // Spiel-Runde: täglich rotierend aus den freigeschalteten Spielen
   var day=Math.floor(Date.now()/86400000);

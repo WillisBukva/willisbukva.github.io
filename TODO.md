@@ -36,6 +36,9 @@ Stand: 11.06.2026
 ## Erledigt (15.06.2026) — Pfad-Abschluss-Glückwünsche
 - [x] Beim Meistern eines Lernpfads ploppt ein Glückwunsch-Popup mit lustigem Spruch + Konfetti (z. B. „Zahlen-Profi! … mit Kindern um die Wette zählen", „Fälle-Bezwinger!", „Alphabet-Meister!"). Erkennung via sectionMastered + us[cu].mastered-Flag (einmalig, kein erneutes Poppen). Hat Vorrang vor dem Tages-Session-Popup. Sprüche für alle Pfade + Themen-Decks.
 
+## Erledigt (15.06.2026) — Tages-Session folgt dem roten Faden (kapazitätsbasiert)
+- [x] Kein „alle 33 Buchstaben zuerst"-Zwang mehr. Neue Logik (DAILY_REQS, nur für die Tages-Session — Dashboard bleibt frei): Alphabet zuerst; ab 12 Buchstaben kommen Wörter dazu (dann lesbar); ab 5 Wörtern Zahlen/Farben/Wochentage; ab 10 Wörtern Sätze + Grammatik + Frequenzwörter + Hören/Sprechen; Lesen ab 25. Verifiziert: 9 Wörter → keine Sätze, 10 Wörter → Sätze. Alphabet bleibt in Rotation bis gemeistert. SEC_REQS.sentences auf 10 angeglichen.
+
 ## Aktuell in Arbeit
 - [ ] Alle Lernpfade gemeinsam durchgehen und verbessern
   - [x] Alphabet: didaktische Lern-Reihenfolge (Wie im Deutschen → Falsche Freunde → Neue Formen → Besonderheiten), Kleinbuchstaben auf Karten, Buchstaben-Auswahlmenü zum Wiederholen einzelner gelernter Buchstaben (ohne Fortschritts-Verfälschung)
