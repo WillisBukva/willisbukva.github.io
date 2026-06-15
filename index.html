@@ -590,32 +590,6 @@ Noch keine eigenen Vokabeln.<br>Füge deine ersten Karten hinzu!
 </div>
 </div>
 
-<!-- GAP SENTENCE SCREEN -->
-<div id="scGap" class="sc">
-  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
-    <button class="btn ghost" onclick="closeGap()" style="padding:.4rem .8rem;font-size:.8rem;">← Zurück</button>
-    <span id="gapTitle" style="font-weight:700;font-size:.95rem;"></span>
-    <span id="gapCounter" style="margin-left:auto;font-size:.78rem;color:var(--text3);"></span>
-  </div>
-  <div class="gap-card">
-    <div class="gap-badge" id="gapBadge">Lückensatz</div>
-    <div class="gap-sentence" id="gapSentence"></div>
-    <div class="gap-translation" id="gapTranslation"></div>
-    <div class="gap-hint" id="gapHint"></div>
-    <div class="gap-input-wrap">
-      <input class="gap-input" id="gapInput" type="text" maxlength="2" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="?">
-    </div>
-    <div class="gap-result" id="gapResult"></div>
-    <button class="gap-check-btn" id="gapCheckBtn" onclick="checkGap()">Prüfen ✓</button>
-  </div>
-  <div style="margin-top:1rem;display:flex;gap:.5rem;">
-    <button class="btn ghost" style="flex:1;" onclick="gapKyr()">⌨ Kyrillisch</button>
-    <button class="btn ghost" style="flex:1;" onclick="skipGap()">Weiter <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></span></button>
-  </div>
-  <div class="kyr" id="gapKyrKeys" style="margin-top:.75rem;display:none;"></div>
-</div>
-
-
 <div id="scAlphaQuiz" class="sc">
   <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;">
     <button class="btn sm ghost" onclick="aqGoBack()">&#8592; Zurück</button>
@@ -3426,7 +3400,7 @@ function pruefGap(){
   }
 }
 
-function checkGapChoice(chosen){gapPickChoice(chosen);}
+
 
 function prevCard(){if(ci>0){ci--;loadCard();}}
 function nextCard(){if(ci<cb.length-1){ci++;loadCard();}else startQuiz();}
@@ -4550,30 +4524,7 @@ function showAchievementPopup(a){
   setTimeout(function(){if(ov.parentNode)ov.remove();},4000);
 }
 
-function showAchievementsScreen(){
-  var us=GU();if(!us[cu])return;
-  var earned=us[cu].achievements||{};
-  var ov=document.createElement('div');
-  ov.className='levelup-overlay';
-  var html='<div class="levelup-box" style="max-width:400px;width:96%;max-height:80vh;overflow-y:auto;padding:1.2rem;">';
-  html+='<div style="font-size:1rem;font-weight:900;color:var(--cyan);margin-bottom:1rem;">&#127942; Achievements ('+Object.keys(earned).length+'/'+ACHIEVEMENTS.length+')</div>';
-  ACHIEVEMENTS.forEach(function(a){
-    var done=!!earned[a.id];
-    html+='<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .6rem;margin-bottom:.3rem;background:var(--glass);border:1px solid '+(done?'rgba(0,229,200,.3)':'var(--border)')+';border-radius:var(--r-sm);opacity:'+(done?'1':'.45')+'">';
-    html+='<span style="font-size:1.4rem;">'+a.icon+'</span>';
-    html+='<div style="flex:1;text-align:left;">';
-    html+='<div style="font-size:.82rem;font-weight:700;">'+a.title+'</div>';
-    html+='<div style="font-size:.7rem;color:var(--text3);">'+a.desc+'</div>';
-    html+='</div>';
-    html+='<span style="font-size:.75rem;color:var(--cyan);">+'+a.xp+' XP</span>';
-    html+='</div>';
-  });
-  html+='<button class="btn" style="width:100%;margin-top:.8rem;background:var(--glass);" id="achCloseBtn">Schließen</button>';
-  html+='</div>';
-  ov.innerHTML=html;
-  document.body.appendChild(ov);
-  document.getElementById('achCloseBtn').onclick=function(){ov.remove();};
-}
+
 // ===== ENDE ACHIEVEMENTS =====
 
 // ===== ONBOARDING =====
@@ -4650,14 +4601,7 @@ function finishOnboarding(){
   };
 }
 
-function checkOnboarding(){
-  var us=GU();
-  if(us[cu]&&!us[cu].onboarded){
-    showSc('scOnboard');
-    return true;
-  }
-  return false;
-}
+
 // ===== ENDE ONBOARDING =====
 
 // ===== THEMEN-VOKABELN =====
@@ -5008,23 +4952,9 @@ function updSRS(key,ok){
   SS(srs);
 }
 
-function getSRSDueCount(){
-  var srs=GS(),now=Date.now(),count=0;
-  Object.values(srs).forEach(function(s){if(s.nr&&s.nr<=now)count++;});
-  return count;
-}
 
-function getSRSDueItems(sec){
-  var srs=GS(),now=Date.now(),due=[];
-  Object.entries(srs).forEach(function(kv){
-    var k=kv[0],s=kv[1];
-    if(s.nr&&s.nr<=now&&k.startsWith(sec+':')){
-      var idx=parseInt(k.split(':')[1]);
-      if(C[sec]&&C[sec][idx])due.push({item:C[sec][idx],key:k,idx:idx});
-    }
-  });
-  return due;
-}
+
+
 
 function startSRSSession(){
   // Alle fälligen Karten aus allen Sektionen sammeln
@@ -5276,96 +5206,6 @@ function renderCustomList(){
 }
 
 const GAP_DATA={"А":{"s1":{"ru":"___нна — моя сестра.","de":"Anna ist meine Schwester.","answer":"А","full":"Анна — моя сестра."},"s2":{"ru":"___рбуз и ___пельсин — фрукты.","de":"Wassermelone und Orange sind Früchte.","answer":"А","full":"Арбуз и Апельсин — фрукты.","word2":"Апельсин"},"s3":{"ru":"___втобус едет в центр.","de":"Der Bus fährt ins Zentrum.","answer":"А","full":"Автобус едет в центр."},"s4":{"ru":"___прель — весенний месяц.","de":"April ist ein Frühlingsmonat.","answer":"А","full":"Апрель — весенний месяц."}},"Б":{"s1":{"ru":"___рат живёт дома.","de":"Der Bruder wohnt zu Hause.","answer":"Б","full":"Брат живёт дома."},"s2":{"ru":"___абушка готовит ___орщ.","de":"Die Oma kocht Borscht.","answer":"Б","full":"Бабушка готовит Борщ.","word2":"Борщ"},"s3":{"ru":"___илет стоит сто рублей.","de":"Die Fahrkarte kostet hundert Rubel.","answer":"Б","full":"Билет стоит сто рублей."},"s4":{"ru":"___анан жёлтый.","de":"Die Banane ist gelb.","answer":"Б","full":"Банан жёлтый."}},"В":{"s1":{"ru":"___ода очень холодная.","de":"Das Wasser ist sehr kalt.","answer":"В","full":"Вода очень холодная."},"s2":{"ru":"___есна и ___ечер тёплые.","de":"Frühling und Abend sind warm.","answer":"В","full":"Весна и Вечер тёплые.","word2":"Вечер"},"s3":{"ru":"___олга — большая река.","de":"Die Wolga ist ein großer Fluss.","answer":"В","full":"Волга — большая река."},"s4":{"ru":"___етер сильный.","de":"Der Wind ist stark.","answer":"В","full":"Ветер сильный."}},"Г":{"s1":{"ru":"___де ты живёшь?","de":"Wo wohnst du?","answer":"Г","full":"Где ты живёшь?"},"s2":{"ru":"___ород и ___оры красивые.","de":"Stadt und Berge sind schön.","answer":"Г","full":"Город и Горы красивые.","word2":"Горы"},"s3":{"ru":"___итара звучит красиво.","de":"Die Gitarre klingt schön.","answer":"Г","full":"Гитара звучит красиво."},"s4":{"ru":"___од начинается в январе.","de":"Das Jahr beginnt im Januar.","answer":"Г","full":"Год начинается в январе."}},"Д":{"s1":{"ru":"___ом большой и красивый.","de":"Das Haus ist groß und schön.","answer":"Д","full":"Дом большой и красивый."},"s2":{"ru":"___ети и ___едушка гуляют.","de":"Die Kinder und der Opa spazieren.","answer":"Д","full":"Дети и Дедушка гуляют.","word2":"Дедушка"},"s3":{"ru":"___ождь идёт весь день.","de":"Es regnet den ganzen Tag.","answer":"Д","full":"Дождь идёт весь день."},"s4":{"ru":"___верь открыта.","de":"Die Tür ist offen.","answer":"Д","full":"Дверь открыта."}},"Е":{"s1":{"ru":"___го зовут Иван.","de":"Er heißt Iwan.","answer":"Е","full":"Его зовут Иван."},"s2":{"ru":"___да и ___жевика вкусные.","de":"Essen und Brombeere sind lecker.","answer":"Е","full":"Еда и Ежевика вкусные.","word2":"Ежевика"},"s3":{"ru":"___вропа далеко.","de":"Europa ist weit weg.","answer":"Е","full":"Европа далеко."},"s4":{"ru":"___сли хочешь, иди домой.","de":"Wenn du willst, geh nach Hause.","answer":"Е","full":"Если хочешь, иди домой."}},"Ё":{"s1":{"ru":"___лка стоит в комнате.","de":"Der Tannenbaum steht im Zimmer.","answer":"Ё","full":"Ёлка стоит в комнате."},"s2":{"ru":"___жик и ___лка в лесу.","de":"Igel und Tanne sind im Wald.","answer":"Ё","full":"Ёжик и Ёлка в лесу.","word2":"Ёлка"},"s3":{"ru":"Вс___ хорошо.","de":"Alles ist gut.","answer":"Ё","full":"Всё хорошо."},"s4":{"ru":"Т___тя дома.","de":"Die Tante ist zu Hause.","answer":"Ё","full":"Тётя дома."}},"Ж":{"s1":{"ru":"Я ___иву в городе.","de":"Ich wohne in der Stadt.","answer":"Ж","full":"Я живу в городе."},"s2":{"ru":"___арко, ___ара сильная сегодня.","de":"Es ist heiß, die Hitze ist heute stark.","answer":"Ж","full":"Жарко, Жара сильная сегодня.","word2":"Жара"},"s3":{"ru":"___ук сидит на листе.","de":"Der Käfer sitzt auf dem Blatt.","answer":"Ж","full":"Жук сидит на листе."},"s4":{"ru":"___ена дома.","de":"Die Ehefrau ist zu Hause.","answer":"Ж","full":"Жена дома."}},"З":{"s1":{"ru":"___десь очень красиво.","de":"Hier ist es sehr schön.","answer":"З","full":"Здесь очень красиво."},"s2":{"ru":"___има и ___акат красивые.","de":"Winter und Sonnenuntergang sind schön.","answer":"З","full":"Зима и Закат красивые.","word2":"Закат"},"s3":{"ru":"___онт лежит дома.","de":"Der Regenschirm liegt zu Hause.","answer":"З","full":"Зонт лежит дома."},"s4":{"ru":"___автра будет солнце.","de":"Morgen scheint die Sonne.","answer":"З","full":"Завтра будет солнце."}},"И":{"s1":{"ru":"___ван — мой друг.","de":"Iwan ist mein Freund.","answer":"И","full":"Иван — мой друг."},"s2":{"ru":"___гра и ___мя важны.","de":"Spiel und Name sind wichtig.","answer":"И","full":"Игра и Имя важны.","word2":"Имя"},"s3":{"ru":"___юнь — летний месяц.","de":"Juni ist ein Sommermonat.","answer":"И","full":"Июнь — летний месяц."},"s4":{"ru":"___дея хорошая.","de":"Die Idee ist gut.","answer":"И","full":"Идея хорошая."}},"Й":{"s1":{"ru":"Это мо___ чай.","de":"Das ist mein Tee.","answer":"Й","full":"Это мой чай."},"s2":{"ru":"Тво___ и мо___ дома наши.","de":"Deiner und meiner — unsere Häuser.","answer":"Й","full":"Твой и мой дома наши.","word2":"мой"},"s3":{"ru":"Ча___ горячий.","de":"Der Tee ist heiß.","answer":"Й","full":"Чай горячий."},"s4":{"ru":"Музе___ открыт сегодня.","de":"Das Museum ist heute geöffnet.","answer":"Й","full":"Музей открыт сегодня."}},"К":{"s1":{"ru":"___нига лежит на столе.","de":"Das Buch liegt auf dem Tisch.","answer":"К","full":"Книга лежит на столе."},"s2":{"ru":"___ошка и ___от дома.","de":"Katze und Kater sind zu Hause.","answer":"К","full":"Кошка и Кот дома.","word2":"Кот"},"s3":{"ru":"___арта на стене.","de":"Die Karte hängt an der Wand.","answer":"К","full":"Карта на стене."},"s4":{"ru":"___офе без сахара.","de":"Kaffee ohne Zucker.","answer":"К","full":"Кофе без сахара."}},"Л":{"s1":{"ru":"___ето очень тёплое.","de":"Der Sommer ist sehr warm.","answer":"Л","full":"Лето очень тёплое."},"s2":{"ru":"___ес и ___уна красивые.","de":"Wald und Mond sind schön.","answer":"Л","full":"Лес и Луна красивые.","word2":"Луна"},"s3":{"ru":"___ампа на столе.","de":"Die Lampe steht auf dem Tisch.","answer":"Л","full":"Лампа на столе."},"s4":{"ru":"___имон кислый.","de":"Die Zitrone ist sauer.","answer":"Л","full":"Лимон кислый."}},"М":{"s1":{"ru":"___ама готовит суп.","de":"Mama kocht Suppe.","answer":"М","full":"Мама готовит суп."},"s2":{"ru":"___оре и ___ечта далеко.","de":"Das Meer und der Traum sind weit.","answer":"М","full":"Море и Мечта далеко.","word2":"Мечта"},"s3":{"ru":"___олоко белое.","de":"Die Milch ist weiß.","answer":"М","full":"Молоко белое."},"s4":{"ru":"___узыка играет тихо.","de":"Die Musik spielt leise.","answer":"М","full":"Музыка играет тихо."}},"Н":{"s1":{"ru":"___очь тихая и тёмная.","de":"Die Nacht ist still und dunkel.","answer":"Н","full":"Ночь тихая и тёмная."},"s2":{"ru":"___ебо и ___очь красивые.","de":"Himmel und Nacht sind schön.","answer":"Н","full":"Небо и Ночь красивые.","word2":"Ночь"},"s3":{"ru":"___овый год скоро.","de":"Neujahr ist bald.","answer":"Н","full":"Новый год скоро."},"s4":{"ru":"___ос холодный зимой.","de":"Die Nase ist im Winter kalt.","answer":"Н","full":"Нос холодный зимой."}},"О":{"s1":{"ru":"___н читает книгу.","de":"Er liest ein Buch.","answer":"О","full":"Он читает книгу."},"s2":{"ru":"___сень и ___блако красивые.","de":"Herbst und Wolke sind schön.","answer":"О","full":"Осень и Облако красивые.","word2":"Облако"},"s3":{"ru":"___кно открыто.","de":"Das Fenster ist offen.","answer":"О","full":"Окно открыто."},"s4":{"ru":"___бед готов.","de":"Das Mittagessen ist fertig.","answer":"О","full":"Обед готов."}},"П":{"s1":{"ru":"___апа работает каждый день.","de":"Papa arbeitet jeden Tag.","answer":"П","full":"Папа работает каждый день."},"s2":{"ru":"___арк и ___руд рядом.","de":"Park und Teich sind nebenan.","answer":"П","full":"Парк и Пруд рядом.","word2":"Пруд"},"s3":{"ru":"___исьмо лежит на столе.","de":"Der Brief liegt auf dem Tisch.","answer":"П","full":"Письмо лежит на столе."},"s4":{"ru":"___огода сегодня хорошая.","de":"Das Wetter ist heute gut.","answer":"П","full":"Погода сегодня хорошая."}},"Р":{"s1":{"ru":"___ека течёт медленно.","de":"Der Fluss fließt langsam.","answer":"Р","full":"Река течёт медленно."},"s2":{"ru":"___оза и ___ека красивые.","de":"Rose und Fluss sind schön.","answer":"Р","full":"Роза и Река красивые.","word2":"Река"},"s3":{"ru":"___адио играет музыку.","de":"Das Radio spielt Musik.","answer":"Р","full":"Радио играет музыку."},"s4":{"ru":"___ыба плавает в море.","de":"Der Fisch schwimmt im Meer.","answer":"Р","full":"Рыба плавает в море."}},"С":{"s1":{"ru":"___егодня хорошая погода.","de":"Heute ist gutes Wetter.","answer":"С","full":"Сегодня хорошая погода."},"s2":{"ru":"___олнце и ___нег красивые.","de":"Sonne und Schnee sind schön.","answer":"С","full":"Солнце и Снег красивые.","word2":"Снег"},"s3":{"ru":"___обака бежит домой.","de":"Der Hund läuft nach Hause.","answer":"С","full":"Собака бежит домой."},"s4":{"ru":"___ыр вкусный.","de":"Der Käse ist lecker.","answer":"С","full":"Сыр вкусный."}},"Т":{"s1":{"ru":"___ам живёт моя семья.","de":"Dort wohnt meine Familie.","answer":"Т","full":"Там живёт моя семья."},"s2":{"ru":"___игр и ___юльпан красивые.","de":"Tiger und Tulpe sind schön.","answer":"Т","full":"Тигр и Тюльпан красивые.","word2":"Тюльпан"},"s3":{"ru":"___еатр в центре города.","de":"Das Theater ist im Stadtzentrum.","answer":"Т","full":"Театр в центре города."},"s4":{"ru":"___орт сладкий.","de":"Die Torte ist süß.","answer":"Т","full":"Торт сладкий."}},"У":{"s1":{"ru":"___тром я пью чай.","de":"Morgens trinke ich Tee.","answer":"У","full":"Утром я пью чай."},"s2":{"ru":"___лица и ___голок красивые.","de":"Straße und Ecke sind schön.","answer":"У","full":"Улица и Уголок красивые.","word2":"Уголок"},"s3":{"ru":"___жин готов.","de":"Das Abendessen ist fertig.","answer":"У","full":"Ужин готов."},"s4":{"ru":"___рок начинается.","de":"Der Unterricht beginnt.","answer":"У","full":"Урок начинается."}},"Ф":{"s1":{"ru":"___рукты очень вкусные.","de":"Die Früchte sind sehr lecker.","answer":"Ф","full":"Фрукты очень вкусные."},"s2":{"ru":"___утбол и ___онарь рядом.","de":"Fußball und Laterne sind nebenan.","answer":"Ф","full":"Футбол и Фонарь рядом.","word2":"Фонарь"},"s3":{"ru":"___ильм начинается вечером.","de":"Der Film beginnt am Abend.","answer":"Ф","full":"Фильм начинается вечером."},"s4":{"ru":"___лаг висит высоко.","de":"Die Fahne hängt hoch.","answer":"Ф","full":"Флаг висит высоко."}},"Х":{"s1":{"ru":"___леб всегда свежий.","de":"Das Brot ist immer frisch.","answer":"Х","full":"Хлеб всегда свежий."},"s2":{"ru":"___олод и ___лопок зимой.","de":"Kälte und Baumwolle im Winter.","answer":"Х","full":"Холод и Хлопок зимой.","word2":"Хлопок"},"s3":{"ru":"___обби — это спорт.","de":"Das Hobby ist Sport.","answer":"Х","full":"Хобби — это спорт."},"s4":{"ru":"___удожник рисует море.","de":"Der Maler malt das Meer.","answer":"Х","full":"Художник рисует море."}},"Ц":{"s1":{"ru":"___веты растут в саду.","de":"Die Blumen wachsen im Garten.","answer":"Ц","full":"Цветы растут в саду."},"s2":{"ru":"___ирк и ___арство — сказка.","de":"Zirkus und Königreich sind Märchen.","answer":"Ц","full":"Цирк и Царство — сказка.","word2":"Царство"},"s3":{"ru":"___ена высокая.","de":"Der Preis ist hoch.","answer":"Ц","full":"Цена высокая."},"s4":{"ru":"___ентр города красивый.","de":"Das Stadtzentrum ist schön.","answer":"Ц","full":"Центр города красивый."}},"Ч":{"s1":{"ru":"___ай горячий и вкусный.","de":"Der Tee ist heiß und lecker.","answer":"Ч","full":"Чай горячий и вкусный."},"s2":{"ru":"___асы и ___емодан в углу.","de":"Uhr und Koffer sind in der Ecke.","answer":"Ч","full":"Часы и Чемодан в углу.","word2":"Чемодан"},"s3":{"ru":"___еловек идёт по улице.","de":"Ein Mensch geht die Straße entlang.","answer":"Ч","full":"Человек идёт по улице."},"s4":{"ru":"До___ь дома.","de":"Die Tochter ist zu Hause.","answer":"Ч","full":"Дочь дома."}},"Ш":{"s1":{"ru":"___апка лежит на полке.","de":"Die Mütze liegt im Regal.","answer":"Ш","full":"Шапка лежит на полке."},"s2":{"ru":"___кола и ___арф рядом.","de":"Schule und Schal sind nebenan.","answer":"Ш","full":"Школа и Шарф рядом.","word2":"Шарф"},"s3":{"ru":"___каф большой.","de":"Der Schrank ist groß.","answer":"Ш","full":"Шкаф большой."},"s4":{"ru":"___околад сладкий.","de":"Die Schokolade ist süß.","answer":"Ш","full":"Шоколад сладкий."}},"Щ":{"s1":{"ru":"___и — русский суп.","de":"Schi ist eine russische Suppe.","answer":"Щ","full":"Щи — русский суп."},"s2":{"ru":"___енок и ___ётка дома.","de":"Welpe und Bürste sind zu Hause.","answer":"Щ","full":"Щенок и Щётка дома.","word2":"Щётка"},"s3":{"ru":"___ука плавает в реке.","de":"Der Hecht schwimmt im Fluss.","answer":"Щ","full":"Щука плавает в реке."},"s4":{"ru":"Бор___ очень вкусный.","de":"Der Borschtsch ist sehr lecker.","answer":"Щ","full":"Борщ очень вкусный."}},"Ъ":{"s1":{"ru":"От___езд скоро.","de":"Die Abfahrt ist bald.","answer":"Ъ","full":"Отъезд скоро."},"s2":{"ru":"От___езд и под___ём важны.","de":"Abfahrt und Aufstieg sind wichtig.","answer":"Ъ","full":"Отъезд и подъём важны.","word2":"подъём"},"s3":{"ru":"Об___явление висит на стене.","de":"Die Anzeige hängt an der Wand.","answer":"Ъ","full":"Объявление висит на стене."},"s4":{"ru":"Он с___ел весь суп.","de":"Er hat die ganze Suppe aufgegessen.","answer":"Ъ","full":"Он съел весь суп."}},"Ы":{"s1":{"ru":"Кот___ мяукают громко.","de":"Die Katzen miauen laut.","answer":"Ы","full":"Коты мяукают громко."},"s2":{"ru":"Кот___ и сад___ красивые.","de":"Die Katzen und die Gärten sind schön.","answer":"Ы","full":"Коты и сады красивые.","word2":"сады"},"s3":{"ru":"С___р на столе.","de":"Der Käse ist auf dem Tisch.","answer":"Ы","full":"Сыр на столе."},"s4":{"ru":"М___ дома.","de":"Wir sind zu Hause.","answer":"Ы","full":"Мы дома."}},"Ь":{"s1":{"ru":"Сол___ на столе.","de":"Das Salz ist auf dem Tisch.","answer":"Ь","full":"Соль на столе."},"s2":{"ru":"Сол___ и кров___ нужны.","de":"Salz und Blut werden gebraucht.","answer":"Ь","full":"Соль и кровь нужны.","word2":"кровь"},"s3":{"ru":"Ден___ хороший.","de":"Der Tag ist schön.","answer":"Ь","full":"День хороший."},"s4":{"ru":"Тетрад___ лежит на столе.","de":"Das Heft liegt auf dem Tisch.","answer":"Ь","full":"Тетрадь лежит на столе."}},"Э":{"s1":{"ru":"___то моя книга.","de":"Das ist mein Buch.","answer":"Э","full":"Это моя книга."},"s2":{"ru":"___то и ___кран важны.","de":"Das und der Bildschirm sind wichtig.","answer":"Э","full":"Это и экран важны.","word2":"экран"},"s3":{"ru":"___кскурсия завтра.","de":"Die Exkursion ist morgen.","answer":"Э","full":"Экскурсия завтра."},"s4":{"ru":"___таж первый.","de":"Es ist der erste Stock.","answer":"Э","full":"Этаж первый."}},"Ю":{"s1":{"ru":"___г тёплый и красивый.","de":"Der Süden ist warm und schön.","answer":"Ю","full":"Юг тёплый и красивый."},"s2":{"ru":"___г и ___мор важны.","de":"Süden und Humor sind wichtig.","answer":"Ю","full":"Юг и Юмор важны.","word2":"Юмор"},"s3":{"ru":"___бка синяя.","de":"Der Rock ist blau.","answer":"Ю","full":"Юбка синяя."},"s4":{"ru":"___ра играет в футбол.","de":"Jura spielt Fußball.","answer":"Ю","full":"Юра играет в футбол."}},"Я":{"s1":{"ru":"___ учу русский язык.","de":"Ich lerne die russische Sprache.","answer":"Я","full":"Я учу русский язык."},"s2":{"ru":"___ и ___блоко — начало.","de":"Ich und Apfel — ein Anfang.","answer":"Я","full":"Я и Яблоко — начало.","word2":"Яблоко"},"s3":{"ru":"___года красная.","de":"Die Beere ist rot.","answer":"Я","full":"Ягода красная."},"s4":{"ru":"___хта в море.","de":"Die Jacht ist auf dem Meer.","answer":"Я","full":"Яхта в море."}}};
-
-let gapLetter=null,gapStep=0,gapFrom='learn';
-
-function openGap(letter,fromScreen){
-  gapLetter=letter;
-  gapStep=0;
-  gapFrom=fromScreen||'learn';
-  showGapStep();
-  showSc('scGap');
-}
-
-function showGapStep(){
-  const d=GAP_DATA[gapLetter];
-  if(!d)return;
-  const step=gapStep===0?d.s1:d.s2;
-  const isS2=gapStep===1;
-  document.getElementById('gapTitle').textContent='Buchstabe '+gapLetter+' — Lückensatz';
-  document.getElementById('gapCounter').textContent=(gapStep+1)+'/2';
-  document.getElementById('gapBadge').textContent=isS2?'Lückensatz 2 — 2 Wörter':'Lückensatz 1';
-  document.getElementById('gapHint').textContent='Tipp: Ergänze den fehlenden Buchstaben '+gapLetter;
-  // Lücken optisch markieren: ___ → [   ]
-  const display=step.ru.replace(/___/g,'[ ___ ]');
-  document.getElementById('gapSentence').textContent=display;
-  document.getElementById('gapTranslation').textContent=step.de;
-  const inp=document.getElementById('gapInput');
-  inp.value='';inp.className='gap-input';
-  document.getElementById('gapResult').textContent='';
-  document.getElementById('gapCheckBtn').textContent='Prüfen ✓';
-  document.getElementById('gapCheckBtn').onclick=checkGap;
-  document.getElementById('gapKyrKeys').style.display='none';
-  setTimeout(()=>inp.focus(),200);
-}
-
-function checkGap(){
-  const d=GAP_DATA[gapLetter];
-  if(!d)return;
-  const step=gapStep===0?d.s1:d.s2;
-  const inp=document.getElementById('gapInput');
-  const val=inp.value.trim().toUpperCase();
-  const ans=step.answer.toUpperCase();
-  const res=document.getElementById('gapResult');
-  const btn=document.getElementById('gapCheckBtn');
-  if(!val){inp.focus();return;}
-  if(val===ans||val===ans.toLowerCase()){
-    inp.classList.add('correct');
-    res.style.color='#22c55e';
-    res.textContent='✓ Richtig! → '+step.full;
-    btn.textContent='Weiter →';
-    btn.onclick=nextGapStep;
-    // XP vergeben
-    try{const us=GU();if(us[cu]){us[cu].stats=us[cu].stats||{};us[cu].stats.totalXp=(us[cu].stats.totalXp||0)+2;us[cu].stats.totalPoints=(us[cu].stats.totalPoints||0)+5;SU(us);}}catch(e){}
-  } else {
-    inp.classList.add('wrong');
-    res.style.color='#ef4444';
-    res.textContent='✗ Nicht ganz — der Buchstabe ist: '+step.answer;
-    btn.textContent='Nochmal';
-    btn.onclick=()=>{inp.value='';inp.className='gap-input';res.textContent='';inp.focus();btn.textContent='Prüfen ✓';btn.onclick=checkGap;};
-  }
-}
-
-function nextGapStep(){
-  if(gapStep===0){
-    gapStep=1;
-    showGapStep();
-  } else {
-    // Beide Lückensätze fertig → zurück zur Lernkarte
-    closeGap();
-    // Nächste Karte laden
-    if(typeof nextCard==='function')nextCard();
-  }
-}
-
-function skipGap(){nextGapStep();}
-
-function closeGap(){
-  showSc(gapFrom==='quiz'?'scQuiz':'scLearn');
-}
-
-function gapKyr(){
-  const kb=document.getElementById('gapKyrKeys');
-  if(kb.style.display==='none'||!kb.innerHTML){
-    bldKB('gapInput','gapKyrKeys');
-    kb.style.display='flex';
-    kb.style.flexWrap='wrap';
-    kb.style.gap='.3rem';
-    kb.style.marginTop='.5rem';
-  } else {
-    kb.style.display='none';
-  }
-}
 
 window.addEventListener('load',()=>{
   if(window.speechSynthesis){_lv();speechSynthesis.addEventListener('voiceschanged',()=>{_lv();});try{const w=new SpeechSynthesisUtterance('');w.volume=0;speechSynthesis.speak(w);speechSynthesis.cancel();}catch(e){}}
