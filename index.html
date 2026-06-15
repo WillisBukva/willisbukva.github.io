@@ -377,6 +377,14 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <span class="dl" id="diffL">Standard (A2)</span>
 <span class="dc">&#196;ndern &#8250;</span>
 </div>
+<div class="glass" id="overallBox" style="padding:.9rem 1.1rem;margin-bottom:.2rem;">
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.45rem;">
+<span style="font-size:.8rem;font-weight:800;">&#127919; Gesamtfortschritt</span>
+<span style="font-size:.8rem;font-weight:900;color:var(--cyan);" id="overallPct">0%</span>
+</div>
+<div class="acc-bg"><div class="acc-fill" id="overallBar" style="width:0%"></div></div>
+<div style="font-size:.74rem;color:var(--text3);margin-top:.4rem;" id="overallCefr"></div>
+</div>
 <div class="pfad-title">Dein Lernpfad</div>
 <div id="pfad"></div>
 </div>
@@ -2800,6 +2808,10 @@ const SEC_REQS={
   weekdays:{sec:'alphabet',n:12,label:'12 Buchstaben lernen'},
   listening:{sec:'alphabet',n:6,label:'6 Buchstaben lernen'},
   grammar:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
+  grammar_faelle:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
+  grammar_verben:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
+  grammar_pronomen:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
+  grammar_praepositionen:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   speaking:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   sentences:{sec:'vocabulary',n:15,label:'15 Vokabeln lernen'},
   reading:{sec:'vocabulary',n:25,label:'25 Vokabeln lernen'}
@@ -2808,6 +2820,53 @@ function getSecRecommendation(secId,d){
   var rq=SEC_REQS[secId];if(!rq)return null;
   return ((d.progress&&d.progress[rq.sec])||0)>=rq.n?null:rq.label;
 }
+
+// Reiche Lern-Reihenfolge — inkl. der 520 Frequenzwörter und Grammatik-Unterthemen,
+// leicht→schwer und Wortschatz mit Fertigkeiten verzahnt
+const LEARN_ORDER=['vocabulary','numbers','colors','weekdays','vocab_top1','grammar','grammar_faelle','vocab_top2','listening','grammar_verben','speaking','vocab_top3','sentences','grammar_pronomen','vocab_top4','reading','grammar_praepositionen','vocab_top5','vocab_top6'];
+function _secFull(id){return (C[id]||[]).length;}
+// gemeistert = Fortschritt erreicht die ganze (volle) Liste, nicht nur den Level-Ausschnitt
+function sectionMastered(d,id){var full=_secFull(id);return full===0||((d.progress&&d.progress[id])||0)>=full;}
+function eligibleSections(d){return LEARN_ORDER.filter(function(id){return _secFull(id)>0&&!getSecRecommendation(id,d)&&!sectionMastered(d,id);});}
+function sectionLabel(id){
+  var sec=SECS.find(function(s){return s.id===id;});
+  if(sec)return sec.title.replace(/^\d+\.\s*/,'');
+  var names={vocab_top1:'Häufigste Wörter 1–100',vocab_top2:'Häufigste Wörter 101–200',vocab_top3:'Häufigste Wörter 201–300',vocab_top4:'Häufigste Wörter 301–400',vocab_top5:'Häufigste Wörter 401–500',vocab_top6:'Häufigste Wörter 501–520',grammar_faelle:'Fälle & Deklination',grammar_verben:'Verben & Zeitformen',grammar_pronomen:'Pronomen',grammar_praepositionen:'Präpositionen'};
+  return names[id]||id;
+}
+function sectionIcon(id){var sec=SECS.find(function(s){return s.id===id;});if(sec)return sec.icon;if(id.indexOf('vocab_top')===0)return '&#128293;';if(id.indexOf('grammar_')===0)return '&#128209;';return '&#9654;';}
+// Menü-Einstieg (für „Hier weitermachen") — Sub-Sektionen starten direkt
+function launchSection(id){
+  if(id==='vocabulary')showVocabMenu();
+  else if(id==='numbers')showNumbersMenu();
+  else if(id==='colors')showColorsMenu();
+  else if(id==='weekdays')showWeekdaysMenu();
+  else if(id==='grammar')showGrammarMenu();
+  else if(id==='listening')showListeningMenu();
+  else if(id==='speaking')showSpeakingMenu();
+  else if(id==='sentences')showSentencesMenu();
+  else startSec(id);
+}
+
+// Gesamtfortschritt über das Kern-Curriculum + Sprachniveau-Meilenstein
+const CURRICULUM=['alphabet','vocabulary','vocab_top1','vocab_top2','vocab_top3','vocab_top4','vocab_top5','vocab_top6','numbers','colors','weekdays','grammar','grammar_faelle','grammar_verben','grammar_pronomen','grammar_praepositionen','listening','speaking','sentences','reading'];
+function computeOverallProgress(d){
+  var done=0,total=0;
+  CURRICULUM.forEach(function(id){
+    var full=_secFull(id);if(!full)return;
+    total+=full;
+    done+=Math.min((d.progress&&d.progress[id])||0,full);
+  });
+  var pct=total?Math.round(100*done/total):0;
+  var cefr;
+  if(pct<15)cefr={b:'A1',t:'Grundlagen — erste Wörter & Buchstaben'};
+  else if(pct<40)cefr={b:'A2',t:'Einfache Sätze & kurze Gespräche'};
+  else if(pct<70)cefr={b:'B1',t:'Alltagsgespräche — du kommst durch den Tag'};
+  else if(pct<100)cefr={b:'B2',t:'Sicher unterhalten — fast am Ziel'};
+  else cefr={b:'B2+',t:'Kurs komplett — alles gemeistert! 🎉'};
+  return {pct:pct,cefr:cefr};
+}
+
 // Der eine empfohlene nächste Schritt für „Hier weitermachen"
 function getNextStep(d,srs,now){
   try{
@@ -2816,18 +2875,12 @@ function getNextStep(d,srs,now){
     var aDone=(d.progress&&d.progress['alphabet'])||0;
     var aLen=(C['alphabet']||[]).length;
     if(aDone<aLen)return {icon:'&#1071;',text:aDone>0?('Alphabet: Buchstabe '+(aDone+1)+' von '+aLen+' wartet auf dich'):'Starte mit dem Alphabet — die Basis für alles!',action:function(){showAlphabetMenu();}};
-    var order=['vocabulary','numbers','colors','weekdays','grammar','listening','speaking','sentences','reading'];
-    for(var i=0;i<order.length;i++){
-      var id=order[i];
-      if(getSecRecommendation(id,d))continue;
+    var elig=eligibleSections(d);
+    if(elig.length){
+      var id=elig[0];
       var pool=getDifficultyPool(C[id]||[],cd,id);
-      var done=(d.progress&&d.progress[id])||0;
-      if(pool.length&&done<pool.length){
-        var sec=SECS.find(function(s){return s.id===id;});
-        return {icon:sec?sec.icon:'&#9654;',text:(sec?sec.title.replace(/^\d+\.\s*/,''):id)+': '+done+' / '+pool.length+' gelernt — weiter geht\'s!',action:(function(sid){return function(){
-          if(sid==='vocabulary')showVocabMenu();else if(sid==='numbers')showNumbersMenu();else if(sid==='colors')showColorsMenu();else if(sid==='grammar')showGrammarMenu();else startSec(sid);
-        };})(id)};
-      }
+      var done=Math.min((d.progress&&d.progress[id])||0,pool.length);
+      return {icon:sectionIcon(id),text:sectionLabel(id)+': '+done+' / '+pool.length+' — weiter geht\'s!',action:(function(sid){return function(){launchSection(sid);};})(id)};
     }
     return null;
   }catch(e){return null;}
@@ -2864,13 +2917,10 @@ function startDailyStep(){
   if(st.type==='neu'){
     var us=GU(),d=us[cu];
     if(((d.progress&&d.progress['alphabet'])||0)<(C['alphabet']||[]).length){startSec('alphabet');return;}
-    var order=['vocabulary','numbers','colors','weekdays','grammar','listening','speaking','sentences','reading'];
-    for(var j=0;j<order.length;j++){
-      var id=order[j];
-      if(getSecRecommendation(id,d))continue;
-      var pool=getDifficultyPool(C[id]||[],cd,id);
-      if(pool.length&&((d.progress&&d.progress[id])||0)<pool.length){startSec(id);return;}
-    }
+    // Abwechslung: der wievielte „neu"-Schritt ist das? → andere Sektion pro Runde
+    var neuRank=0;for(var i=0;i<idx;i++){if(p.steps[i].type==='neu')neuRank++;}
+    var elig=eligibleSections(d);
+    if(elig.length){startSec(elig[neuRank%elig.length]);return;}
     startSec('vocabulary');return;
   }
   // Spiel-Runde: täglich rotierend aus den freigeschalteten Spielen
@@ -2976,6 +3026,12 @@ function showDash(){
   document.getElementById('accBar').style.width=acc+'%';
   document.getElementById('diffE').textContent=cfg.e;
   document.getElementById('diffL').textContent=cfg.l;
+  // Gesamtfortschritt + Sprachniveau
+  try{var ov=computeOverallProgress(d);
+    document.getElementById('overallPct').textContent=ov.pct+'%';
+    document.getElementById('overallBar').style.width=ov.pct+'%';
+    document.getElementById('overallCefr').innerHTML='<strong style="color:var(--cyan);">'+ov.cefr.b+'</strong> · '+ov.cefr.t;
+  }catch(e){}
   const pfEl=document.getElementById('pfad');pfEl.innerHTML='';
   // Tages-Session: R\u00fcckkehr vom gestarteten Schritt erkennen.
   // Abgehakt wird nur, wenn dabei XP verdient wurden \u2014 sonst bleibt der Schritt offen.
@@ -3078,7 +3134,15 @@ function getDifficultyPool(data,diffKey,sec){
     return pool.length>=2?pool:data;
   }
   const range=(DIFF_RANGES[sec]||{})[diffKey]||[0,999];
-  var pool2=data.slice(range[0],Math.min(range[1],data.length));
+  var upper=Math.min(range[1],data.length);
+  // Level = Startschwierigkeit, kein Deckel: Übung schaltet schwerere Karten frei.
+  // (progress ist die kumulierte Übungsmenge → wächst monoton, gedeckelt auf die volle Liste)
+  try{
+    var us=GU();var prog=(us&&us[cu]&&us[cu].progress&&us[cu].progress[sec])||0;
+    var bs=(typeof DC!=='undefined'&&DC[diffKey])?DC[diffKey].bs:5;
+    if(prog>0)upper=Math.min(data.length,Math.max(upper,prog+bs));
+  }catch(e){}
+  var pool2=data.slice(range[0],upper);
   return pool2.length>=2?pool2:data;
 }
 

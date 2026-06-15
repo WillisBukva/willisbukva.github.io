@@ -27,6 +27,12 @@ Stand: 11.06.2026
 - [x] Lerntage werden jetzt dauerhaft gespeichert (vorher nur 14 Tage zurück) — fürs Kalender-Archiv
 - [Hinweis] Streak-Zähler ist seit 11.06. unbegrenzt (kein 7-Tage-Deckel mehr); die 7 Kästchen neben der Flamme bleiben Wochen-Vorschau
 
+## Erledigt (15.06.2026) — Audit + Progression + Gesamtfortschritt
+- [x] Profi-Audit: keine Duplikate (innerhalb/quer), Pools über alle Level nicht leer/fehlerfrei, SRS löst neue Sektionen auf, roter Faden ok. Toten Code entfernt (alter scGap-Screen + 5 verwaiste Funktionen, ~6,9 KB).
+- [x] Fortschritt schaltet Schwierigkeit frei: getDifficultyPool deckelt nicht mehr beim Level — Übung erweitert den Pool monoton bis zur vollen Liste (Level = Startschwierigkeit). Gilt überall (normales Lernen + Tages-Session).
+- [x] Tages-Session reicher & abwechslungsreicher: LEARN_ORDER inkl. 520 Frequenzwörter + Grammatik-Unterthemen; pro „neu"-Runde eine andere Sektion. „gemeistert" = volle Liste, nicht Level-Ausschnitt. Grammatik-Unterthemen an Vokabel-Voraussetzung angeglichen.
+- [x] Gesamtfortschritt-Anzeige auf Dashboard: % über das Kern-Curriculum + CEFR-Meilenstein (A1 Grundlagen → A2 einfache Gespräche → B1 Alltagsgespräche → B2 sicher unterhalten).
+
 ## Aktuell in Arbeit
 - [ ] Alle Lernpfade gemeinsam durchgehen und verbessern
   - [x] Alphabet: didaktische Lern-Reihenfolge (Wie im Deutschen → Falsche Freunde → Neue Formen → Besonderheiten), Kleinbuchstaben auf Karten, Buchstaben-Auswahlmenü zum Wiederholen einzelner gelernter Buchstaben (ohne Fortschritts-Verfälschung)
