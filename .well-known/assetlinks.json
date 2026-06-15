@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "de.bukva.app",
+      "sha256_cert_fingerprints": [
+        "15:C9:41:F7:D1:D8:21:D0:67:50:F6:4B:1E:2B:76:D9:55:7B:49:32:72:5F:7A:36:DC:18:86:C7:B3:F1:B8:56"
+      ]
+    }
+  }
+]
