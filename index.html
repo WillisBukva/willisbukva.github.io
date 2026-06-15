@@ -4374,8 +4374,10 @@ function checkDiktat(){
   var correct=item.m.trim();
   var fb=document.getElementById('diktatFeedback');
   document.getElementById('diktatInput').disabled=true;
-  var sim=typeof levenshteinSim==='function'?levenshteinSim(answer.toLowerCase(),correct.toLowerCase()):0;
-  if(answer===correct||sim>=0.85){
+  // ё wie е behandeln (im Russischen üblich)
+  var nE=function(s){return s.toLowerCase().replace(/ё/g,'е');};
+  var sim=typeof levenshteinSim==='function'?levenshteinSim(nE(answer),nE(correct)):0;
+  if(nE(answer)===nE(correct)||sim>=0.85){
     fb.innerHTML='<span style="color:#22c55e;">&#10003; Richtig!</span>';
     spk(correct);
     document.getElementById('diktatWeiter').style.display='block';
@@ -4903,7 +4905,8 @@ function checkAns(){
   const item=cb[qi],ua=document.getElementById('qIn').value.trim().toLowerCase();
   if(!ua){alert('Bitte Antwort eingeben!');return;}
   const raw=qm==='ru-de'?item.t:item.m,correct=raw.toLowerCase().trim();
-  const nrm=s=>s.replace(/[().!?,\s]/g,'');
+  // ё wie е behandeln (im Russischen üblich) + Satzzeichen/Leerzeichen ignorieren
+  const nrm=s=>s.replace(/ё/g,'е').replace(/[().!?,\s]/g,'');
   const uaC=nrm(ua),cC=nrm(correct);
   // Varianten wie "Gut / OK" einzeln akzeptieren; sonst exakt oder mit kleiner Tippfehler-Toleranz
   const vars=correct.split('/').map(v=>nrm(v.trim())).filter(v=>v.length>0);
@@ -4968,8 +4971,8 @@ function skipLQ(){at=0;qi++;loadLQ();}
 function checkListen(){
   const item=cb[qi],ua=document.getElementById('lIn').value.trim().toLowerCase();
   if(!ua){alert('Bitte Antwort eingeben!');return;}
-  // Russisch (gehörter Text) ODER deutsche Bedeutung gelten als richtig
-  const nrm=s=>s.toLowerCase().replace(/[!?.,]/g,'').trim();
+  // Russisch (gehörter Text) ODER deutsche Bedeutung gelten als richtig; ё wie е
+  const nrm=s=>s.toLowerCase().replace(/ё/g,'е').replace(/[!?.,]/g,'').trim();
   const uaC=nrm(ua),deC=nrm(item.t),ruC=nrm(item.m);
   const ok=uaC===deC||uaC===ruC||(deC.length>3&&levenshteinSim(uaC,deC)>=0.85)||(ruC.length>3&&levenshteinSim(uaC,ruC)>=0.85);
   handleA(ok,item,true);
@@ -5134,9 +5137,11 @@ function skipRetry(){retryQi++;loadRetryQ();}
 function checkRetry(){
   const item=retryCb[retryQi],ua=document.getElementById('retryIn').value.trim().toLowerCase();
   if(!ua){alert('Bitte Antwort eingeben!');return;}
-  const correct=(item.t||'').toLowerCase().trim(),uaC=ua.replace(/[().!?,\s]/g,''),cC=correct.replace(/[().!?,\s]/g,'');
+  // ё wie е behandeln (im Russischen üblich)
+  const uaE=ua.replace(/ё/g,'е');
+  const correct=(item.t||'').toLowerCase().trim().replace(/ё/g,'е'),uaC=uaE.replace(/[().!?,\s]/g,''),cC=correct.replace(/[().!?,\s]/g,'');
   const vars=correct.split('/').map(v=>v.trim().replace(/[().!?,]/g,'').trim());
-  const ok=ua===correct||uaC===cC||vars.some(v=>v===uaC)||correct.includes(ua)&&ua.length>1||ua.includes(cC)&&cC.length>1;
+  const ok=uaE===correct||uaC===cC||vars.some(v=>v===uaC)||correct.includes(uaE)&&uaE.length>1||uaE.includes(cC)&&cC.length>1;
   const inp=document.getElementById('retryIn'),fb=document.getElementById('retryFb');
   if(ok){
     flashScreen('green');inp.className='qi ok';fb.textContent='\u2713 Richtig! Fehler behoben!';fb.className='fb ok';
