@@ -33,6 +33,9 @@ Stand: 11.06.2026
 - [x] Tages-Session reicher & abwechslungsreicher: LEARN_ORDER inkl. 520 Frequenzwörter + Grammatik-Unterthemen; pro „neu"-Runde eine andere Sektion. „gemeistert" = volle Liste, nicht Level-Ausschnitt. Grammatik-Unterthemen an Vokabel-Voraussetzung angeglichen.
 - [x] Gesamtfortschritt-Anzeige auf Dashboard: % über das Kern-Curriculum + CEFR-Meilenstein (A1 Grundlagen → A2 einfache Gespräche → B1 Alltagsgespräche → B2 sicher unterhalten).
 
+## Erledigt (15.06.2026) — Pfad-Abschluss-Glückwünsche
+- [x] Beim Meistern eines Lernpfads ploppt ein Glückwunsch-Popup mit lustigem Spruch + Konfetti (z. B. „Zahlen-Profi! … mit Kindern um die Wette zählen", „Fälle-Bezwinger!", „Alphabet-Meister!"). Erkennung via sectionMastered + us[cu].mastered-Flag (einmalig, kein erneutes Poppen). Hat Vorrang vor dem Tages-Session-Popup. Sprüche für alle Pfade + Themen-Decks.
+
 ## Aktuell in Arbeit
 - [ ] Alle Lernpfade gemeinsam durchgehen und verbessern
   - [x] Alphabet: didaktische Lern-Reihenfolge (Wie im Deutschen → Falsche Freunde → Neue Formen → Besonderheiten), Kleinbuchstaben auf Karten, Buchstaben-Auswahlmenü zum Wiederholen einzelner gelernter Buchstaben (ohne Fortschritts-Verfälschung)

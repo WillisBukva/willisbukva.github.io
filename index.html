@@ -2867,6 +2867,61 @@ function computeOverallProgress(d){
   return {pct:pct,cefr:cefr};
 }
 
+// Glückwunsch-Popup, wenn ein Pfad komplett gemeistert ist
+const MASTERY_MSG={
+  alphabet:{i:'&#1071;',t:'Alphabet-Meister!',x:'Du beherrschst alle 33 kyrillischen Buchstaben — ab jetzt kannst du alles lesen! &#128214;'},
+  vocabulary:{i:'&#128172;',t:'Grundwortschatz gemeistert!',x:'Die wichtigsten Wörter sitzen — du kannst dich schon verständigen!'},
+  vocab_top1:{i:'&#128293;',t:'Top-100-Held!',x:'Die 100 häufigsten Wörter kannst du — damit verstehst du die halbe Alltagssprache!'},
+  vocab_top2:{i:'&#128293;',t:'200 Wörter stark!',x:'Dein Wortschatz wächst rasant — weiter so!'},
+  vocab_top3:{i:'&#128293;',t:'300 Wörter im Kopf!',x:'Du sammelst Vokabeln wie ein Profi!'},
+  vocab_top4:{i:'&#128293;',t:'400 Wörter geknackt!',x:'Fast schon ein wandelndes Wörterbuch!'},
+  vocab_top5:{i:'&#128293;',t:'500 Wörter — Wahnsinn!',x:'Mit 500 Wörtern verstehst du die meisten Alltagstexte!'},
+  vocab_top6:{i:'&#127942;',t:'Frequenz-Champion!',x:'Du kennst die häufigsten russischen Wörter komplett!'},
+  numbers:{i:'&#128290;',t:'Zahlen-Profi!',x:'Du kannst zählen, Preise verstehen und die Uhrzeit lesen — sogar mit Kindern um die Wette zählen! &#128118;'},
+  colors:{i:'&#127912;',t:'Farben-Künstler!',x:'Alle Farben auf Russisch — die Welt ist jetzt bunt für dich!'},
+  weekdays:{i:'&#128197;',t:'Kalender-Meister!',x:'Tage, Monate, Jahreszeiten — du verpasst keinen Termin mehr!'},
+  grammar:{i:'&#128209;',t:'Grammatik-Grundlage gelegt!',x:'Geschlechter, Satzbau, Haben-Konstruktion — das Fundament steht!'},
+  grammar_faelle:{i:'&#128218;',t:'Fälle-Bezwinger!',x:'Die 6 russischen Fälle — der Endgegner der Grammatik ist besiegt! &#128170;'},
+  grammar_verben:{i:'&#9997;&#65039;',t:'Verben-Versteher!',x:'Konjugation, Vergangenheit, Zukunft — du kriegst jedes Verb in Form!'},
+  grammar_pronomen:{i:'&#128100;',t:'Pronomen-Profi!',x:'я, ты, мой, который — du hast alle Pronomen im Griff!'},
+  grammar_praepositionen:{i:'&#128205;',t:'Präpositions-Meister!',x:'в, на, для, через — du weißt immer, welcher Fall kommt!'},
+  listening:{i:'&#127911;',t:'Spitzen-Ohren!',x:'Du verstehst gesprochenes Russisch — kein Gespräch entgeht dir mehr!'},
+  speaking:{i:'&#127908;',t:'Sprach-Talent!',x:'Aussprache sitzt — jetzt traust du dich, einfach loszureden!'},
+  sentences:{i:'&#9999;&#65039;',t:'Satzbau-Architekt!',x:'Du baust eigene Sätze — echte Konversation ist zum Greifen nah!'},
+  reading:{i:'&#128214;',t:'Lese-Ratte!',x:'Du liest russische Texte — bald packst du ein echtes Buch!'},
+  vocab_urlaub:{i:'&#9992;&#65039;',t:'Reise-Bereit!',x:'Flughafen, Hotel, unterwegs — dein Urlaub in Russland kann kommen!'},
+  vocab_beruf:{i:'&#128188;',t:'Business-Russisch!',x:'Büro, Meetings, Kollegen — du bist fit fürs Berufsleben!'},
+  vocab_familie:{i:'&#128106;',t:'Familien-Kenner!',x:'Alle Verwandten auf Russisch — die Familie freut sich!'},
+  vocab_kultur:{i:'&#127963;&#65039;',t:'Kultur-Kenner!',x:'Theater, Musik, Traditionen — du verstehst die russische Seele!'},
+  vocab_studium:{i:'&#127979;',t:'Studi-Russisch!',x:'Uni, Prüfungen, Vorlesungen — du bist bereit fürs Studium!'},
+  vocab_allgemein:{i:'&#10024;',t:'Alltags-Held!',x:'Die wichtigsten Alltagsbegriffe sitzen — du kommst überall durch!'}
+};
+function checkSectionMastery(){
+  try{
+    var us=GU();if(!us[cu])return false;
+    var d=us[cu];if(!d.mastered)d.mastered={};
+    var list=CURRICULUM.concat(['vocab_urlaub','vocab_beruf','vocab_familie','vocab_kultur','vocab_studium','vocab_allgemein']);
+    for(var i=0;i<list.length;i++){
+      var id=list[i];
+      if(MASTERY_MSG[id]&&!d.mastered[id]&&sectionMastered(d,id)){
+        d.mastered[id]=true;SU(us);
+        var msg=MASTERY_MSG[id];
+        var ov=document.createElement('div');ov.className='levelup-overlay';
+        ov.innerHTML='<div class="levelup-box"><div style="font-size:2.6rem;margin-bottom:.4rem;">'+msg.i+'</div>'+
+          '<div style="font-size:.72rem;font-weight:800;color:var(--cyan);letter-spacing:1px;margin-bottom:.3rem;">PFAD ABGESCHLOSSEN</div>'+
+          '<div style="font-weight:900;font-size:1.25rem;margin-bottom:.5rem;">'+msg.t+'</div>'+
+          '<div style="font-size:.86rem;color:var(--text3);margin-bottom:1.1rem;line-height:1.5;">'+msg.x+'</div>'+
+          '<button class="btn primary" style="width:100%;" id="msOk">&#127881; Weiter so!</button></div>';
+        document.body.appendChild(ov);
+        ov.querySelector('#msOk').onclick=function(){ov.remove();};
+        if(typeof showConfetti==='function')showConfetti();
+        return true;
+      }
+    }
+  }catch(e){}
+  return false;
+}
+
 // Der eine empfohlene nächste Schritt für „Hier weitermachen"
 function getNextStep(d,srs,now){
   try{
@@ -3035,6 +3090,8 @@ function showDash(){
   const pfEl=document.getElementById('pfad');pfEl.innerHTML='';
   // Tages-Session: R\u00fcckkehr vom gestarteten Schritt erkennen.
   // Abgehakt wird nur, wenn dabei XP verdient wurden \u2014 sonst bleibt der Schritt offen.
+  // Pfad gemeistert? Glückwunsch-Popup hat Vorrang vor dem Tages-Session-Popup
+  var masteryShown=checkSectionMastery();
   var dsP=getDailyPlan();
   if(dsP&&dsP.launched!=null){
     var xpJetzt=(d.stats&&d.stats.totalXp)||0;
@@ -3042,8 +3099,8 @@ function showDash(){
     if(geschafft)dsP.steps[dsP.launched].done=true;
     dsP.launched=null;saveDailyPlan(dsP);
     if(dsP.steps.every(function(s){return s.done;})){
-      if(!dsP.celebrated){dsP.celebrated=true;saveDailyPlan(dsP);setTimeout(showDailyDone,400);}
-    } else if(!dsP.dismissed){
+      if(!dsP.celebrated&&!masteryShown){dsP.celebrated=true;saveDailyPlan(dsP);setTimeout(showDailyDone,400);}
+    } else if(!dsP.dismissed&&!masteryShown){
       setTimeout(showDailySession,350);
     }
   }
