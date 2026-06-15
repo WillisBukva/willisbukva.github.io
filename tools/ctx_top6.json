@@ -1,0 +1,22 @@
+{
+"победа": ["Это была важная победа.", "Das war ein wichtiger Sieg."],
+"здоровье": ["Здоровье важнее денег.", "Gesundheit ist wichtiger als Geld."],
+"лекарство": ["Я принимаю лекарство.", "Ich nehme ein Medikament."],
+"боль": ["У меня сильная боль.", "Ich habe starke Schmerzen."],
+"температура": ["У меня высокая температура.", "Ich habe hohes Fieber."],
+"помощь": ["Мне нужна помощь.", "Ich brauche Hilfe."],
+"опасность": ["Здесь нет опасности.", "Hier gibt es keine Gefahr."],
+"правда": ["Скажи мне правду.", "Sag mir die Wahrheit."],
+"ложь": ["Это была ложь.", "Das war eine Lüge."],
+"шутка": ["Это была хорошая шутка.", "Das war ein guter Witz."],
+"история": ["Расскажи интересную историю.", "Erzähl eine interessante Geschichte."],
+"будущее": ["Я думаю о будущем.", "Ich denke an die Zukunft."],
+"прошлое": ["Не думай о прошлом.", "Denk nicht an die Vergangenheit."],
+"начало": ["Это только начало.", "Das ist erst der Anfang."],
+"конец": ["Это конец фильма.", "Das ist das Ende des Films."],
+"часть": ["Это часть города.", "Das ist ein Teil der Stadt."],
+"половина": ["Дай мне половину яблока.", "Gib mir die Hälfte des Apfels."],
+"пара": ["У меня есть пара вопросов.", "Ich habe ein paar Fragen."],
+"группа": ["Наша группа очень большая.", "Unsere Gruppe ist sehr groß."],
+"список": ["Я пишу список покупок.", "Ich schreibe eine Einkaufsliste."]
+}
