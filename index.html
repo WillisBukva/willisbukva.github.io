@@ -2582,9 +2582,80 @@ function genusTabelle(active){
   h+='</div>';
   return h;
 }
-// Reicher Erklär-Block für Grammatik-Karten: Geschlechter-Tabelle (genus) oder freies lehr-HTML.
+// Räumliches Präpositions-Diagramm: Bezug (grau) + Objekt (cyan) zeigt die Lage.
+function praepDia(type){
+  var D={
+    'in':['в','in / drin','<rect x="17" y="9" width="30" height="26" rx="3" fill="none" stroke="#6b7785" stroke-width="2"/><circle cx="32" cy="22" r="6" fill="#00e5c8"/>'],
+    'auf':['на','auf','<line x1="16" y1="29" x2="48" y2="29" stroke="#6b7785" stroke-width="2"/><circle cx="32" cy="21" r="6" fill="#00e5c8"/>'],
+    'unter':['под','unter','<line x1="16" y1="17" x2="48" y2="17" stroke="#6b7785" stroke-width="2"/><circle cx="32" cy="27" r="6" fill="#00e5c8"/>'],
+    'vor':['перед','vor','<rect x="32" y="9" width="20" height="26" rx="3" fill="none" stroke="#6b7785" stroke-width="2"/><circle cx="18" cy="22" r="6" fill="#00e5c8"/>'],
+    'hinter':['за','hinter','<rect x="12" y="9" width="20" height="26" rx="3" fill="#1a2230" stroke="#6b7785" stroke-width="2"/><circle cx="42" cy="22" r="6" fill="#00e5c8"/>'],
+    'zwischen':['между','zwischen','<rect x="6" y="11" width="14" height="22" rx="2" fill="none" stroke="#6b7785" stroke-width="2"/><rect x="44" y="11" width="14" height="22" rx="2" fill="none" stroke="#6b7785" stroke-width="2"/><circle cx="32" cy="22" r="6" fill="#00e5c8"/>'],
+    'zu':['к','zu (hin)','<circle cx="9" cy="22" r="5" fill="#00e5c8"/><line x1="15" y1="22" x2="33" y2="22" stroke="#00e5c8" stroke-width="2"/><polygon points="39,22 32,18 32,26" fill="#00e5c8"/><rect x="44" y="12" width="14" height="20" rx="2" fill="none" stroke="#6b7785" stroke-width="2"/>'],
+    'von':['от','von (weg)','<rect x="8" y="12" width="14" height="20" rx="2" fill="none" stroke="#6b7785" stroke-width="2"/><line x1="26" y1="22" x2="46" y2="22" stroke="#00e5c8" stroke-width="2"/><polygon points="52,22 45,18 45,26" fill="#00e5c8"/>']
+  };
+  var d=D[type];if(!d)return '';
+  return '<div style="flex:1;background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:.4rem .3rem;text-align:center;">'+
+    '<svg viewBox="0 0 64 44" style="width:100%;max-width:60px;height:34px;">'+d[2]+'</svg>'+
+    '<div style="font-size:.92rem;font-weight:900;color:#00e5c8;">'+d[0]+'</div>'+
+    '<div style="font-size:.6rem;color:var(--text3);">'+d[1]+'</div></div>';
+}
+// Farbcodierte „Präposition + Fall → Bedeutung"-Regel (Fall in seiner Farbe).
+function praepRegel(pr){
+  var h='<div style="background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.55rem .65rem;margin-bottom:.6rem;">';
+  pr.forEach(function(r,i){
+    var col=KASUS_COL[r.f]||'var(--cyan)';
+    h+='<div style="font-size:.82rem;'+(i<pr.length-1?'margin-bottom:.28rem;':'')+'line-height:1.45;"><b style="font-weight:900;">'+r.p+'</b> + <span style="color:'+col+';font-weight:700;">'+r.f+'</span> &rarr; '+r.b+'</div>';
+  });
+  return h+'</div>';
+}
+const PRAEP_DATA={
+"В и НА — место и направление":{dia:"in,auf",pr:[{p:'в / на',f:'Präpositional',b:'Ort — wo?'},{p:'в / на',f:'Akkusativ',b:'Richtung — wohin?'}]},
+"ИЗ и С — Herkunft":{pr:[{p:'из',f:'Genitiv',b:'aus (von innen) — из Москвы'},{p:'с',f:'Genitiv',b:'von (Oberfläche/Event) — с работы'}]},
+"К и ОТ — Annäherung/Entfernung":{dia:"zu,von",pr:[{p:'к',f:'Dativ',b:'hin zu — к врачу'},{p:'от',f:'Genitiv',b:'weg von — от дома'}]},
+"С + творительный — Begleitung":{pr:[{p:'с',f:'Instrumental',b:'mit (zusammen) — с другом'}]},
+"О + предложный — über":{pr:[{p:'о',f:'Präpositional',b:'über (Thema) — о книге'}]},
+"ДЛЯ + родительный — für":{pr:[{p:'для',f:'Genitiv',b:'für (Zweck) — для тебя'}]},
+"ИЗ-ЗА / ИЗ-ПОД — wegen/unter":{dia:"unter",pr:[{p:'из-за',f:'Genitiv',b:'wegen — из-за дождя'},{p:'из-под',f:'Genitiv',b:'unter…hervor — из-под стола'}]},
+"ПЕРЕД / ЗА / МЕЖДУ + тв.пад.":{dia:"vor,hinter,zwischen",pr:[{p:'перед / за / между',f:'Instrumental',b:'vor / hinter / zwischen'}]},
+"ПО + дательный — entlang/gemäß":{pr:[{p:'по',f:'Dativ',b:'entlang / gemäß — по улице'}]},
+"ПРИ + предложный — bei/zu Zeiten":{pr:[{p:'при',f:'Präpositional',b:'bei / zur Zeit von — при мне'}]},
+"ЧЕРЕЗ + винительный — durch/in":{pr:[{p:'через',f:'Akkusativ',b:'in (Zeit) / über (Raum) — через час'}]},
+"БЕЗ + родительный — ohne":{pr:[{p:'без',f:'Genitiv',b:'ohne — без сахара'}]},
+"ПОСЛЕ и ДО + родительный":{pr:[{p:'после / до',f:'Genitiv',b:'nach / vor (Zeit) — после работы'}]}
+};
+// Mini-Tabelle (Konjugation/Pronomen): Label links, Form rechts in Akzentfarbe.
+function gramTab(t,rows,col){
+  col=col||'var(--cyan)';
+  var h='<div style="background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.55rem .65rem;margin-bottom:.6rem;">';
+  if(t)h+='<div style="font-size:.7rem;color:'+col+';font-weight:700;margin-bottom:.4rem;">'+t+'</div>';
+  rows.forEach(function(r,i){
+    h+='<div style="display:flex;justify-content:space-between;gap:.6rem;font-size:.84rem;padding:.16rem 0;'+(i<rows.length-1?'border-bottom:1px solid var(--border);':'')+'"><span style="color:var(--text3);">'+r[0]+'</span><span style="font-weight:700;color:'+col+';">'+r[1]+'</span></div>';
+  });
+  return h+'</div>';
+}
+const GRAM_LEHR={
+"Я читаю / ты читаешь":{t:'1. Konjugation: читать (lesen)',col:'#5aa9ff',rows:[['я','читаю'],['ты','читаешь'],['он / она','читает'],['мы','читаем'],['вы','читаете'],['они','читают']]},
+"Я говорю / ты говоришь":{t:'2. Konjugation: говорить (sprechen)',col:'#54d98c',rows:[['я','говорю'],['ты','говоришь'],['он / она','говорит'],['мы','говорим'],['вы','говорите'],['они','говорят']]},
+"Глагол ХОТЕТЬ":{t:'хотеть (wollen) — gemischt',col:'#ffb454',rows:[['я','хочу'],['ты','хочешь'],['он / она','хочет'],['мы','хотим'],['вы','хотите'],['они','хотят']]},
+"Глагол БЫТЬ":{t:'быть (sein) — Vergangenheit (Präsens fehlt!)',col:'#b48cff',rows:[['он (m)','был'],['она (f)','была'],['оно (n)','было'],['они (pl)','были']]},
+"Прошедшее время":{t:'Vergangenheit: Stamm + -л / -ла / -ло / -ли',col:'#b48cff',rows:[['он (m)','читал'],['она (f)','читала'],['оно (n)','читало'],['они (pl)','читали']]},
+"Личные местоимения":{t:'Personalpronomen',col:'#5aa9ff',rows:[['я','ich'],['ты','du'],['он / она / оно','er / sie / es'],['мы','wir'],['вы','ihr / Sie'],['они','sie (Pl.)']]},
+"Притяжательные местоимения":{t:'mein — nach Geschlecht des Nomens',col:'#ff79ad',rows:[['мой (m)','мой стол'],['моя (f)','моя книга'],['моё (n)','моё окно'],['мои (pl)','мои друзья']]},
+"Склонение личных местоимений":{t:'я (ich) in allen Fällen',col:'#5aa9ff',rows:[['Nominativ','я'],['Gen / Akk','меня'],['Dativ','мне'],['Instrumental','мной'],['Präpositional','(обо) мне']]}
+};
+// Reicher Erklär-Block: Geschlechter-Tabelle (genus), Präpositions-Diagramme/Regeln, Konjugations-/Pronomen-Tabelle, oder freies lehr-HTML.
 function grammarExtraHtml(item){
   if(item.genus)return genusTabelle(item.genus);
+  var pd=PRAEP_DATA[item.m];
+  if(pd){
+    var h='';
+    if(pd.dia)h+='<div style="display:flex;gap:.4rem;margin-bottom:.6rem;">'+pd.dia.split(',').map(function(t){return praepDia(t);}).join('')+'</div>';
+    if(pd.pr)h+=praepRegel(pd.pr);
+    return h+(item.lehr||'');
+  }
+  var gl=GRAM_LEHR[item.m];
+  if(gl)return gramTab(gl.t,gl.rows,gl.col)+(item.lehr||'');
   return item.lehr||'';
 }
 
