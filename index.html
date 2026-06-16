@@ -1361,9 +1361,9 @@ vocab_top6:[
 ],
 // __TOP500_END__
 grammar:[
-  {m:"Мужской род",t:"Männliches Geschlecht",s:"Geschlechter",e:"стол, брат, город",x:"Endet meist auf Konsonant oder -й",mn:"он: стол (Tisch), брат (Bruder), день (Tag)",o:["Männliches Geschlecht","Weibliches Geschlecht","Sächliches Geschlecht","Kein Geschlecht"],r:["Мужской род","Женский род","Средний род","Без рода"],ctx:[{ru:"Это стол. Он большой.",de:"Das ist ein Tisch. Er ist groß."},{ru:"Мой брат — студент.",de:"Mein Bruder ist Student."}]},
-  {m:"Женский род",t:"Weibliches Geschlecht",s:"Geschlechter",e:"мама, книга, улица",x:"Endet meist auf -а oder -я",mn:"она: книга (Buch), мама (Mama), земля (Erde)",o:["Weibliches Geschlecht","Männliches Geschlecht","Sächliches Geschlecht","Kein Geschlecht"],r:["Женский род","Мужской род","Средний род","Без рода"],ctx:[{ru:"Это книга. Она интересная.",de:"Das ist ein Buch. Es ist interessant."},{ru:"Это интересная книга.",de:"Das ist ein interessantes Buch."}]},
-  {m:"Средний род",t:"Sächliches Geschlecht",s:"Geschlechter",e:"окно, море, имя",x:"Endet meist auf -о oder -е",mn:"оно: окно (Fenster), море (Meer), имя (Name)",o:["Sächliches Geschlecht","Männliches Geschlecht","Weibliches Geschlecht","Kein Geschlecht"],r:["Средний род","Мужской род","Женский род","Без рода"],ctx:[{ru:"Это окно. Оно большое.",de:"Das ist ein Fenster. Es ist groß."},{ru:"Окно открыто.",de:"Das Fenster ist offen."}]},
+  {m:"Мужской род",t:"Männliches Geschlecht",s:"Geschlechter",genus:"m",e:"стол, брат, город",x:"Endet meist auf Konsonant oder -й",mn:"он: стол (Tisch), брат (Bruder), день (Tag)",o:["Männliches Geschlecht","Weibliches Geschlecht","Sächliches Geschlecht","Kein Geschlecht"],r:["Мужской род","Женский род","Средний род","Без рода"],ctx:[{ru:"Это стол. Он большой.",de:"Das ist ein Tisch. Er ist groß."},{ru:"Мой брат — студент.",de:"Mein Bruder ist Student."}]},
+  {m:"Женский род",t:"Weibliches Geschlecht",s:"Geschlechter",genus:"f",e:"мама, книга, улица",x:"Endet meist auf -а oder -я",mn:"она: книга (Buch), мама (Mama), земля (Erde)",o:["Weibliches Geschlecht","Männliches Geschlecht","Sächliches Geschlecht","Kein Geschlecht"],r:["Женский род","Мужской род","Средний род","Без рода"],ctx:[{ru:"Это книга. Она интересная.",de:"Das ist ein Buch. Es ist interessant."},{ru:"Это интересная книга.",de:"Das ist ein interessantes Buch."}]},
+  {m:"Средний род",t:"Sächliches Geschlecht",s:"Geschlechter",genus:"n",e:"окно, море, имя",x:"Endet meist auf -о oder -е",mn:"оно: окно (Fenster), море (Meer), имя (Name)",o:["Sächliches Geschlecht","Männliches Geschlecht","Weibliches Geschlecht","Kein Geschlecht"],r:["Средний род","Мужской род","Женский род","Без рода"],ctx:[{ru:"Это окно. Оно большое.",de:"Das ist ein Fenster. Es ist groß."},{ru:"Окно открыто.",de:"Das Fenster ist offen."}]},
   {m:"Множественное число",t:"Pluralbildung",s:"Geschlechter",e:"столы, книги, окна",x:"-ы/-и für m/f, -а/-я für n",mn:"стол→столы, книга→книги, окно→окна, море→моря",o:["Plural: -ы/-и (m/f), -а/-я (n)","Immer -ы","Immer -и","Kein Plural"],r:["Мн.ч.: -ы/-и, -а/-я","Всегда -ы","Всегда -и","Без мн.ч."],ctx:[{ru:"Один стол — два стола — пять столов.",de:"Ein Tisch — zwei Tische — fünf Tische."},{ru:"В комнате три окна.",de:"Im Zimmer sind drei Fenster."}]},
   {m:"Kein 'ist' im Präsens",t:"Russisch hat kein 'ist' im Präsens",s:"Satzbau",e:"Это книга. = Das ist ein Buch.",x:"Subjekt + Nomen/Adjektiv ohne Verb!",mn:"Это книга. Он врач. Мама дома. Погода хорошая.",o:["Kein Verb im Präsens nötig","Verb 'быть' immer nötig","Verb am Satzende","Verb am Satzanfang"],r:["Без глагола","Всегда нужен глагол","Глагол в конце","Глагол в начале"],ctx:[{ru:"Он врач. Она учитель. Я студент.",de:"Er ist Arzt. Sie ist Lehrerin. Ich bin Student."},{ru:"Он врач.",de:"Er ist Arzt."}]},
   {m:"Свободный порядок слов",t:"Freie Wortstellung",s:"Satzbau",e:"Я читаю книгу. = Книгу я читаю.",x:"Russisch hat freie Wortstellung — Betonung ändert sich",mn:"SVO häufigste Reihenfolge, aber alle Varianten möglich",o:["Freie Wortstellung möglich","Immer SVO","Verb immer am Ende","Subjekt immer zuerst"],r:["Свободный порядок","Всегда СГД","Глагол в конце","Подлежащее первое"],ctx:[{ru:"Книгу читает мама. / Мама читает книгу.",de:"Das Buch liest Mama. / Mama liest das Buch."},{ru:"Маму я люблю.",de:"Die Mama liebe ich (besonders)."}]},
@@ -2555,6 +2555,30 @@ function renderDeclTable(caseName){
   html+='</div></div>';
   return html;
 }
+// Geschlechter-Tabelle (он/она/оно) — hebt das aktuelle Geschlecht hervor, die anderen gedimmt.
+function genusTabelle(active){
+  var rows=[
+    {g:'m',p:'он',pd:'er',end:'Konsonant oder -й',ex:'стол · брат · день'},
+    {g:'f',p:'она',pd:'sie',end:'-а / -я',ex:'книга · мама · земля'},
+    {g:'n',p:'оно',pd:'es',end:'-о / -е',ex:'окно · море · имя'}
+  ];
+  var h='<div style="background:rgba(0,229,200,.05);border:1px solid rgba(0,229,200,.22);border-radius:var(--r-sm);padding:.6rem .65rem;margin-bottom:.6rem;">';
+  h+='<div style="font-size:.7rem;color:var(--cyan);font-weight:700;margin-bottom:.5rem;">Die Endung verr\xe4t das Geschlecht:</div>';
+  rows.forEach(function(r){
+    var on=r.g===active;
+    h+='<div style="padding:.4rem .5rem;border-radius:8px;margin-bottom:.3rem;'+(on?'background:rgba(0,229,200,.14);border:1px solid rgba(0,229,200,.4);':'opacity:.5;')+'">';
+    h+='<div style="display:flex;align-items:baseline;gap:.45rem;"><span style="font-size:1.2rem;font-weight:900;color:'+(on?'var(--cyan)':'var(--text2)')+';">'+r.p+'</span><span style="font-size:.74rem;color:var(--text3);">= '+r.pd+'</span><span style="font-size:.82rem;font-weight:700;margin-left:auto;">'+r.end+'</span></div>';
+    h+='<div style="font-size:.74rem;color:var(--text3);margin-top:.15rem;">'+r.ex+'</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
+}
+// Reicher Erklär-Block für Grammatik-Karten: Geschlechter-Tabelle (genus) oder freies lehr-HTML.
+function grammarExtraHtml(item){
+  if(item.genus)return genusTabelle(item.genus);
+  return item.lehr||'';
+}
 
 // ── GRAMMATIK-TRAINER (Anwendung statt Begriffe) ──────────────────
 // Jede Aufgabe: Lücke im Satz, Grundform in Klammern, 4 Formen zur Wahl.
@@ -2604,8 +2628,27 @@ const GRAMMAR_DRILL=[
   {cat:'Präpos.',q:'Это подарок ___ тебя.',base:'für',answer:'для',opts:['для','от','с','о'],de:'Das ist ein Geschenk für dich.',hint:'für = для + Genitiv'},
   {cat:'Präpos.',q:'Я приду ___ час.',base:'in (Zeit)',answer:'через',opts:['через','в','на','до'],de:'Ich komme in einer Stunde.',hint:'in (Zeitspanne) = через + Akkusativ'},
   {cat:'Präpos.',q:'Я еду ___ Москву.',base:'nach (Richtung)',answer:'в',opts:['в','на','из','от'],de:'Ich fahre nach Moskau.',hint:'Richtung in eine Stadt = в + Akkusativ'},
-  {cat:'Präpos.',q:'Я иду ___ работы.',base:'von (weg)',answer:'с',opts:['с','в','на','к'],de:'Ich komme von der Arbeit.',hint:'von (Veranstaltung/Oberfläche) = с + Genitiv'}
+  {cat:'Präpos.',q:'Я иду ___ работы.',base:'von (weg)',answer:'с',opts:['с','в','на','к'],de:'Ich komme von der Arbeit.',hint:'von (Veranstaltung/Oberfläche) = с + Genitiv'},
+  {cat:'Präpos.',q:'Я живу ___ Москве.',base:'in (Ort)',answer:'в',opts:['в','на','из','с'],de:'Ich wohne in Moskau.',hint:'Ort = в + Präpositional (в Москве)'},
+  {cat:'Präpos.',q:'Книга ___ столе.',base:'auf (Ort)',answer:'на',opts:['на','в','под','о'],de:'Das Buch ist auf dem Tisch.',hint:'auf (Oberfläche) = на + Präpositional'},
+  {cat:'Präpos.',q:'Я думаю ___ тебе.',base:'über/an',answer:'о',opts:['о','в','на','с'],de:'Ich denke an dich.',hint:'Thema = о + Präpositional (о тебе)'},
+  {cat:'Präpos.',q:'Кофе ___ сахара.',base:'ohne',answer:'без',opts:['без','с','для','от'],de:'Kaffee ohne Zucker.',hint:'ohne = без + Genitiv'},
+  {cat:'Präpos.',q:'Я иду ___ другом.',base:'mit',answer:'с',opts:['с','к','от','из'],de:'Ich gehe mit dem Freund.',hint:'Begleitung = с + Instrumental'},
+  {cat:'Präpos.',q:'___ работы я устал.',base:'nach',answer:'После',opts:['После','До','Перед','Через'],de:'Nach der Arbeit bin ich müde.',hint:'nach (zeitlich) = после + Genitiv'},
+  // Grundlagen (Geschlecht via он/она/оно, Haben, Verneinung, Modal, Fragen, Komparativ, Zahlen)
+  {cat:'Grundlagen',q:'Это книга. ___ интересная.',base:'книга',answer:'Она',opts:['Он','Она','Оно','Они'],de:'Das ist ein Buch. Es ist interessant.',hint:'книга endet auf -а → weiblich → она'},
+  {cat:'Grundlagen',q:'Это стол. ___ большой.',base:'стол',answer:'Он',opts:['Он','Она','Оно','Они'],de:'Das ist ein Tisch. Er ist groß.',hint:'стол endet auf Konsonant → männlich → он'},
+  {cat:'Grundlagen',q:'Это окно. ___ открыто.',base:'окно',answer:'Оно',opts:['Он','Она','Оно','Они'],de:'Das ist ein Fenster. Es ist offen.',hint:'окно endet auf -о → sächlich → оно'},
+  {cat:'Grundlagen',q:'___ меня есть собака.',base:'haben',answer:'У',opts:['У','В','На','К'],de:'Ich habe einen Hund.',hint:'haben = У + Person + есть'},
+  {cat:'Grundlagen',q:'У меня ___ времени.',base:'kein',answer:'нет',opts:['нет','не','ни','без'],de:'Ich habe keine Zeit.',hint:'nicht vorhanden = нет + Genitiv'},
+  {cat:'Grundlagen',q:'Я ___ понимаю.',base:'nicht',answer:'не',opts:['не','нет','ни','без'],de:'Ich verstehe nicht.',hint:'Verb verneinen = не direkt vor dem Verb'},
+  {cat:'Grundlagen',q:'___ ты живёшь?',base:'wo',answer:'Где',opts:['Где','Что','Кто','Когда'],de:'Wo wohnst du?',hint:'wo = Где (Fragewort am Satzanfang)'},
+  {cat:'Grundlagen',q:'Здесь ___ курить!',base:'verboten',answer:'нельзя',opts:['нельзя','можно','нужно','надо'],de:'Hier darf man nicht rauchen!',hint:'Verbot = нельзя + Infinitiv'},
+  {cat:'Grundlagen',q:'Москва ___ Берлина.',base:'größer',answer:'больше',opts:['больше','много','самый','очень'],de:'Moskau ist größer als Berlin.',hint:'Komparativ: больше = größer'},
+  {cat:'Grundlagen',q:'Один стол, два ___.',base:'nach 2',answer:'стола',opts:['стол','стола','столов','столы'],de:'Ein Tisch, zwei Tische.',hint:'Nach 2–4: Genitiv Singular (стол → стола)'}
 ];
+// Grammatik-Sektion → passende Trainer-Kategorie (fürs Quiz nach dem Lernen)
+const GRAMMAR_CAT={grammar:'Grundlagen',grammar_faelle:'Fälle',grammar_verben:'Verben',grammar_pronomen:'Pronomen',grammar_praepositionen:'Präpos.'};
 function startGrammarDrill(cat){
   var pool=GRAMMAR_DRILL.filter(function(x){return !cat||x.cat===cat;});
   if(pool.length<4)pool=GRAMMAR_DRILL;
@@ -3356,10 +3399,12 @@ function loadCard(){
       ctxEl.style.display='block';
     } else ctxEl.style.display='none';
   } else {
+  // Reicher Erklär-Block (Geschlechter-Tabelle / lehr-HTML) bei Grammatik — über den Beispielen
+  const lehrHtml=(cs&&cs.indexOf('grammar')===0)?grammarExtraHtml(item):'';
   // Deklinations-Tabelle auf den 6 Fall-Karten (стол/книга/окно in diesem Fall)
   const declHtml=(cs==='grammar_faelle'&&DECL_TABLE[item.s])?renderDeclTable(item.s):'';
-  if((item.ctx&&item.ctx.length)||declHtml){
-    let html=declHtml;
+  if(lehrHtml||(item.ctx&&item.ctx.length)||declHtml){
+    let html=lehrHtml+declHtml;
     if(item.ctx&&item.ctx.length){
       html+='<div style="font-size:.7rem;color:var(--cyan);font-weight:700;margin-bottom:.3rem;">Beispiels\xe4tze (antippen zum Anh\xf6ren):</div>'+item.ctx.map(s=>'<div class="ctx-s"><div class="ctx-ru" data-ru="'+s.ru.replace(/"/g,'&quot;')+'" style="cursor:pointer;">&#128266; '+s.ru+'</div><div class="ctx-de">'+s.de+'</div></div>').join('');
     }
@@ -5036,8 +5081,11 @@ function startQuiz(){
       if(_m===1){startRFMode(cb);return;}
     }
   }
-  if(cs==='grammar'||cs==='grammar_faelle'||cs==='grammar_verben'||cs==='grammar_pronomen'||cs==='grammar_praepositionen'){
-    startRFMode(cb);return; // Grammatik IMMER Richtig/Falsch — das Standard-Quiz passt nicht zu Regeln
+  if(cs&&cs.indexOf('grammar')===0){
+    // Grammatik: echter Anwendungs-Trainer (Lückentext) statt Begriffs-Quiz.
+    // Fortschritt fürs gelernte Batch zählen (wie Standard-Quiz), dann Trainer der passenden Kategorie.
+    var _ug=GU();if(_ug[cu]){_ug[cu].progress[cs]=(_ug[cu].progress[cs]||0)+cb.length;SU(_ug);}
+    startGrammarDrill(GRAMMAR_CAT[cs]||null);return;
   }
   if(cs==='listening'){
     if(Math.random()<0.4){startDiktatMode(cb);return;}
