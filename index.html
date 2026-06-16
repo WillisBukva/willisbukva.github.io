@@ -234,7 +234,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 </style>
 </head>
 <body>
-<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 11</div>
+<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 12</div>
 <div class="flash" id="flash"></div>
 <div class="s-tooltip" id="tooltip"></div>
 <svg width="0" height="0" style="position:absolute">
@@ -1982,14 +1982,10 @@ function registerVocabThemes(){
 }
 // Menü-Einträge inkl. dynamisch erkannter Top-Pakete
 function getVocabTopics(){
-  var t=VOCAB_TOPICS.slice();
-  for(var i=1;i<=20;i++){
-    var key='vocab_top'+i;
-    if(!C[key])break;
-    var von=(i-1)*100+1,bis=(i-1)*100+C[key].length;
-    t.push({key:key,icon:'&#128293;',title:'H\xe4ufigste W\xf6rter '+von+'–'+bis,desc:'Frequenz-Wortschatz'});
-  }
-  return t;
+  // Nur die Themen sind im Vokabel-Menü wählbar. Die „Häufigsten Wörter" (vocab_top1..6)
+  // werden NICHT mehr als Menü-Kacheln angeboten — sie laufen automatisch im Tages-Pfad
+  // (LEARN_ORDER) mit, abwechselnd mit Grammatik & Fertigkeiten.
+  return VOCAB_TOPICS.slice();
 }
 
 // Wort-Paare-Spiel: 5 russische + 5 deutsche Wörter, Paare antippen (3 Runden)
@@ -2488,11 +2484,18 @@ function showNumbersMenu(){
 function showVocabMenu(){
   var us=GU();
   var goalKey=us[cu]&&(us[cu].themeVocab||us[cu].goal)?'vocab_'+(us[cu].themeVocab||us[cu].goal):null;
+  // Fokus-Modus: Solange das im Onboarding gewählte Thema noch nicht abgeschlossen ist,
+  // nur DIESES anzeigen. Die volle "was willst du lernen?"-Auswahl erscheint erst danach.
+  var goalData=goalKey?(C[goalKey]||[]):[];
+  var goalProg=goalKey&&us[cu]&&us[cu].progress?(us[cu].progress[goalKey]||0):0;
+  var goalDone=goalKey&&goalData.length>0&&goalProg>=goalData.length;
+  var focusMode=goalKey&&goalData.length>0&&!goalDone;
+  var topics=focusMode?getVocabTopics().filter(function(t){return t.key===goalKey;}):getVocabTopics();
   var ov=document.createElement('div');
   ov.className='levelup-overlay';
   var inner='<div class="levelup-box" style="max-width:380px;width:94%;padding:1.5rem 1.2rem;max-height:85vh;overflow-y:auto;">';
   inner+='<div style="font-size:1.1rem;font-weight:900;margin-bottom:1rem;color:var(--cyan);">&#128172; Vokabeln</div>';
-  getVocabTopics().forEach(function(t){
+  topics.forEach(function(t){
     var data=C[t.key]||[];
     var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress[t.key]||0,data.length):0;
     var isGoal=t.key===goalKey;
@@ -2505,6 +2508,9 @@ function showVocabMenu(){
     inner+='<span style="color:var(--cyan);font-size:.9rem;">&#8594;</span>';
     inner+='</div>';
   });
+  if(focusMode){
+    inner+='<div style="font-size:.72rem;color:var(--text3);text-align:center;margin:.2rem 0 .7rem;line-height:1.4;">&#128274; Schließe dein Thema ab, dann kannst du weitere Themen w\xe4hlen.</div>';
+  }
   inner+='<button class="btn vocab-pairs-btn" style="width:100%;margin-top:.3rem;margin-bottom:.4rem;border-color:rgba(251,191,36,.4);color:#fbbf24;">&#127183; Wort-Paare-Spiel</button>';
   inner+='<button class="btn vocab-cancel-btn" style="width:100%;background:var(--glass);border-color:var(--border);font-size:.82rem;">Abbrechen</button>';
   inner+='</div>';
@@ -3048,6 +3054,24 @@ function showDailyDone(){
   ov.querySelector('#ddOk').onclick=function(){ov.remove();};
 }
 
+// Häufigste Wörter (vocab_top1..6) als EINE fortlaufende Reihe behandeln:
+// Gesamt-Fortschritt + nächstes noch nicht fertiges Paket.
+function freqWordsState(d){
+  var done=0,total=0,nextKey=null;
+  for(var i=1;i<=20;i++){
+    var key='vocab_top'+i,data=C[key];if(!data)break;
+    var p=Math.min((d&&d.progress&&d.progress[key])||0,data.length);
+    done+=p;total+=data.length;
+    if(!nextKey&&p<data.length)nextKey=key;
+  }
+  return {done:done,total:total,nextKey:nextKey};
+}
+function startFreqWords(){
+  var us=GU(),d=us[cu]||{};
+  var st=freqWordsState(d);
+  startSec(st.nextKey||'vocab_top1'); // alles durch → von vorn (Wiederholung)
+}
+
 function showDash(){
   showSc('scDash');updateStreak();setTimeout(checkAchievements,800);
   const us=GU(),d=us[cu];
@@ -3149,7 +3173,7 @@ function showDash(){
   }
   const PFAD_GROUPS=[
     {title:'&#128292; Grundlagen',ids:['alphabet']},
-    {title:'&#128218; Wortschatz',ids:['vocabulary','numbers','colors','weekdays']},
+    {title:'&#128218; Wortschatz',ids:['vocabulary','vocab_freq','numbers','colors','weekdays']},
     {title:'&#128736;&#65039; Fertigkeiten',ids:['grammar','listening','speaking','sentences','reading']},
     {title:'&#11088; Deine Welt',ids:['custom']}
   ];
@@ -3159,6 +3183,17 @@ function showDash(){
     h.innerHTML=grp.title;
     pfEl.appendChild(h);
     grp.ids.forEach(id=>{
+      if(id==='vocab_freq'){
+        // EINE Zeile für alle 520 Frequenzwörter — macht automatisch weiter wo man war
+        const st=freqWordsState(d);
+        const pctF=st.total?Math.min(100,Math.round(st.done/st.total*100)):0;
+        const rowF=document.createElement('div');rowF.className='pfad-row glass';
+        rowF.onclick=function(){startFreqWords();};
+        const lblF=st.nextKey?(st.done+' / '+st.total+' gelernt'):(st.total+' / '+st.total+' — komplett! &#127942;');
+        rowF.innerHTML='<div class="pfad-icon">&#128293;</div><div class="pfad-info"><h3>H\xe4ufigste W\xf6rter</h3><p>Die wichtigsten '+st.total+' W\xf6rter — Frequenz-Wortschatz</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctF+'%"></div></div><div class="prog-lbl">'+lblF+'</div></div><div class="pfad-arr">'+(st.done>0?'&#8635;':'&#9654;')+'</div>';
+        pfEl.appendChild(rowF);
+        return;
+      }
       const sec=SECS.find(s=>s.id===id);if(!sec)return;
       const data=sec.id==='custom'?getCustomCards():getDifficultyPool(C[sec.id],cd,sec.id);
       const doneN=d.progress[sec.id]||0,pctN=data.length?Math.min(100,Math.round((doneN/data.length)*100)):0;
