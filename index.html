@@ -234,6 +234,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 </style>
 </head>
 <body>
+<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 11</div>
 <div class="flash" id="flash"></div>
 <div class="s-tooltip" id="tooltip"></div>
 <svg width="0" height="0" style="position:absolute">
@@ -439,7 +440,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="quiz-prompt" id="qPrompt">Was ist die Aussprache?</div>
 <div style="text-align:center;margin-bottom:.6rem;display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;">
 <button class="btn sm" onclick="spk(cb[qi].m)">&#128266; Aussprache</button>
-<button class="mic-btn" id="micQBtn" onclick="startMic('quiz')" style="padding:.35rem .75rem;font-size:.75rem;">&#127908; Sprechen</button>
+<button class="mic-btn" id="micQBtn" onclick="startMic('quiz')" style="padding:.35rem .75rem;font-size:.75rem;">&#127908; Nachsprechen</button>
 </div>
 <div id="suggWrap"><div class="sugg-lbl">Vorschl&#228;ge (oder selbst eintippen):</div><div class="suggs" id="suggs"></div></div>
 <div class="kyr-lbl" id="kyrLbl">Kyrillische Tastatur:</div>
@@ -747,7 +748,7 @@ alphabet:[
   {m:"\u0420",s:"r (gerollt!)",t:"r",e:"Russland",x:"Zungenspitzen-R!",mn:"Sieht aus wie 'P' \u2014 GEROLLTES Zungenspitzen-R!",o:["r","l","w","rr"],r:["\u0420","\u041b","\u0412","\u041d"],ctx:[{ru:"\u0420\u0435\u043a\u0430 \u0448\u0438\u0440\u043e\u043a\u0430\u044f.",de:"Der Fluss ist breit."}]},
   {m:"\u0421",s:"ss",t:"ss",e:"Sascha",x:"Stimmlos",mn:"Wie ein 'C' \u2014 stimmloses SS wie in Wasser",o:["ss","sch","s","z"],r:["\u0421","\u0428","\u0417","\u0426"],ctx:[{ru:"\u0421\u0430\u0448\u0430 \u0435\u0441\u0442 \u0441\u0443\u043f.",de:"Sascha isst Suppe."}]},
   {m:"\u0423",s:"u",t:"u",e:"Uljana",x:"Vokal",mn:"Wie 'Y' \u2014 klingt wie 'u' in Uhr",o:["u","o","i","ue"],r:["\u0423","\u041e","\u0418","\u042e"],ctx:[{ru:"\u0423 \u043c\u0435\u043d\u044f \u0435\u0441\u0442\u044c \u043a\u043e\u0448\u043a\u0430.",de:"Ich habe eine Katze."}]},
-  {m:"\u0425",s:"ch (wie Bach)",t:"ch",e:"Charkiw",x:"Wie deutsches ch",mn:"Wie 'X' \u2014 klingt wie 'ch' in Bach",o:["ch","h","k","g"],r:["\u0425","\u0413","\u041a","\u0427"],ctx:[{ru:"\u0425\u043b\u0435\u0431 \u0441\u0432\u0435\u0436\u0438\u0439.",de:"Das Brot ist frisch."}]},
+  {m:"\u0425",s:"ch (wie Bach)",t:"ch",e:"Chleb (Brot)",x:"Wie deutsches ch",mn:"Wie 'X' \u2014 klingt wie 'ch' in Bach",o:["ch","h","k","g"],r:["\u0425","\u0413","\u041a","\u0427"],ctx:[{ru:"\u0425\u043b\u0435\u0431 \u0441\u0432\u0435\u0436\u0438\u0439.",de:"Das Brot ist frisch."}]},
   {m:"\u0418",s:"i",t:"i",e:"Iwan",x:"Vokal",mn:"Wie 'N' mit Strich \u2014 klingt wie 'i' in Igel",o:["i","j","y","ie"],r:["\u0418","\u0419","\u042b","\u042d"],ctx:[{ru:"\u0418\u0432\u0430\u043d \u0438\u0434\u0451\u0442 \u0432 \u0448\u043a\u043e\u043b\u0443.",de:"Iwan geht zur Schule."}]},
   {m:"\u041b",s:"l",t:"l",e:"Lena",x:"Konsonant",mn:"Wie Lambda \u2014 klingt wie 'l' in Lampe",o:["l","r","n","m"],r:["\u041b","\u0420","\u041d","\u041c"],ctx:[{ru:"\u041b\u0435\u043d\u0430 \u0447\u0438\u0442\u0430\u0435\u0442 \u043a\u043d\u0438\u0433\u0443.",de:"Lena liest ein Buch."}]},
   {m:"\u041f",s:"p",t:"p",e:"Pawel",x:"Konsonant",mn:"Wie ein Tor (\u041f) \u2014 klingt wie 'p' in Papa",o:["p","b","f","t"],r:["\u041f","\u0411","\u0424","\u0422"],ctx:[{ru:"\u041f\u0430\u043f\u0430 \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442.",de:"Papa arbeitet."}]},
@@ -2750,6 +2751,7 @@ function showSc(id){document.querySelectorAll('.sc').forEach(function(s){s.class
 
 function init(){
   registerVocabThemes();
+  initMic(); // IMMER initialisieren (auch bei Auto-Login!), sonst ist Spracherkennung nie bereit
   const u=_lg('ru_cur');
   if(u){const us=GU();if(us[u]){cu=u;cd=us[u].diff||'standard';showDash();return;}}
   showSc('scLogin');
@@ -2757,7 +2759,7 @@ function init(){
     const el=document.getElementById(id);
     if(el)el.addEventListener('keypress',e=>{if(e.key==='Enter'){if(id==='qIn')checkAns();else if(id==='lIn')checkListen();else if(id==='retryIn')checkRetry();else login();}});
   });
-  renderDiffCards();initMic();
+  renderDiffCards();
 }
 
 function register(){
@@ -3001,7 +3003,7 @@ function startDailyStep(){
   if(((us2[cu].progress&&us2[cu].progress['weekdays'])||0)>0){games.push(startOrderTrainer);games.push(startTodayQuiz);}
   if(((us2[cu].progress&&us2[cu].progress['grammar'])||0)>0||((us2[cu].progress&&us2[cu].progress['grammar_faelle'])||0)>0)games.push(function(){startGrammarDrill();});
   if(((us2[cu].progress&&us2[cu].progress['listening'])||0)>0)games.push(startListenComprehension);
-  if(navigator.onLine&&micRec&&((us2[cu].progress&&us2[cu].progress['speaking'])||0)>0)games.push(startDialogMode);
+  if(speechReady()&&((us2[cu].progress&&us2[cu].progress['speaking'])||0)>0)games.push(startDialogMode);
   games[day%games.length]();
 }
 function showDailySession(){
@@ -3286,6 +3288,8 @@ function loadCard(){
   if(item&&item.type==='gap'){loadGapCard(item);return;}
   const lb={alphabet:'BUCHSTABE',vocabulary:'VOKABEL',vocab_urlaub:'URLAUB',vocab_beruf:'BERUF',vocab_familie:'FAMILIE',vocab_kultur:'KULTUR',vocab_studium:'STUDIUM',vocab_allgemein:'ALLTAG',grammar:'GRAMMATIK',grammar_faelle:'FÄLLE',grammar_verben:'VERBEN',grammar_pronomen:'PRONOMEN',grammar_praepositionen:'PRÄPOS.',listening:'H\xd6REN',speaking:'SPRECHEN',sentences:'SATZ',reading:'TEXT',numbers:'ZAHL',colors:'FARBE',weekdays:'WOCHENTAG',custom:'EIGENE'};
   document.getElementById('cBadge').textContent=lb[cs]||(cs&&cs.indexOf('vocab_top')===0?'TOP-WORT':cs.toUpperCase());
+  // Alphabet: Nachsprechen ausblenden — Spracherkennung erkennt einzelne Buchstaben nicht zuverlaessig
+  var _mlb=document.getElementById('micLBtn');if(_mlb)_mlb.style.display=(cs==='alphabet')?'none':'';
   document.getElementById('cMain').textContent=item.m;
   // s ist nur beim Alphabet die Aussprache — sonst Kategorie/Info; Transliteration steckt in e
   if(cs==='alphabet'){
@@ -3308,6 +3312,15 @@ function loadCard(){
   const mn=document.getElementById('cMn');
   if(item.mn){mn.textContent=item.mn;mn.style.display='block';}else mn.style.display='none';
   const ctxEl=document.getElementById('ctxSents');
+  if(cs==='alphabet'){
+    // Alphabet: ein Beispielwort statt ganzer Sätze (passt zum Leseniveau)
+    const exHtml=alphaExampleHtml(item.m);
+    if(exHtml){
+      ctxEl.innerHTML=exHtml;
+      ctxEl.querySelectorAll('.ctx-ru').forEach(el=>{el.onclick=()=>spk(el.getAttribute('data-ru'));});
+      ctxEl.style.display='block';
+    } else ctxEl.style.display='none';
+  } else {
   // Deklinations-Tabelle auf den 6 Fall-Karten (стол/книга/окно in diesem Fall)
   const declHtml=(cs==='grammar_faelle'&&DECL_TABLE[item.s])?renderDeclTable(item.s):'';
   if((item.ctx&&item.ctx.length)||declHtml){
@@ -3319,6 +3332,7 @@ function loadCard(){
     ctxEl.querySelectorAll('.ctx-ru').forEach(el=>{el.onclick=()=>spk(el.getAttribute('data-ru'));});
     ctxEl.style.display='block';
   } else ctxEl.style.display='none';
+  }
   const card=document.getElementById('learnCard');card.style.transform='scale(0.97)';
   setTimeout(()=>{card.style.transform='scale(1)';},120);
   document.getElementById('prevBtn').disabled=ci===0;
@@ -3630,6 +3644,31 @@ let aqLetters=[],aqIdx=0,aqGapIdx=0;
 // Buchstaben-Gruppen der Lern-Reihenfolge (Rest = Gruppe 3 "Neue Form")
 const AQ_GROUPS={'А':1,'К':1,'М':1,'О':1,'Т':1,'Е':1,'В':2,'Н':2,'Р':2,'С':2,'У':2,'Х':2,'Щ':4,'Ы':4,'Ь':4,'Ъ':4};
 const AQ_GROUP_LABELS={1:'&#10003; Wie im Deutschen',2:'&#9888; Falscher Freund!',3:'&#10024; Neue Form',4:'&#11088; Besonderheit'};
+// Ein Beispielwort pro Buchstabe (statt ganzer Sätze): passt zum Leseniveau am Alphabet-Anfang.
+// Antippbar zum Anhören. Wort enthält den Ziel-Buchstaben (wird hervorgehoben).
+const AQ_EX={
+'А':{w:'Анна',d:'Anna'},'Б':{w:'Борис',d:'Boris'},'В':{w:'Вера',d:'Wera'},
+'Г':{w:'Галина',d:'Galina'},'Д':{w:'Дмитрий',d:'Dmitrij'},'Е':{w:'Елена',d:'Jelena'},
+'Ё':{w:'Ёж',d:'Igel'},'Ж':{w:'Жара',d:'Hitze'},'З':{w:'Зоя',d:'Soja'},
+'И':{w:'Иван',d:'Iwan'},'Й':{w:'Йога',d:'Yoga'},'К':{w:'Катя',d:'Katja'},
+'Л':{w:'Лена',d:'Lena'},'М':{w:'Москва',d:'Moskau'},'Н':{w:'Наташа',d:'Natascha'},
+'О':{w:'Олег',d:'Oleg'},'П':{w:'Павел',d:'Pawel'},'Р':{w:'Россия',d:'Russland'},
+'С':{w:'Саша',d:'Sascha'},'Т':{w:'Таня',d:'Tanja'},'У':{w:'Ульяна',d:'Uljana'},
+'Ф':{w:'Фёдор',d:'Fjodor'},'Х':{w:'Хлеб',d:'Brot'},'Ц':{w:'Цирк',d:'Zirkus'},
+'Ч':{w:'Чай',d:'Tee'},'Ш':{w:'Шарф',d:'Schal'},'Щ':{w:'Щи',d:'Kohlsuppe'},
+'Ъ':{w:'Объект',d:'Objekt'},'Ы':{w:'Ты',d:'du'},'Ь':{w:'Мать',d:'Mutter'},
+'Э':{w:'Это',d:'das ist'},'Ю':{w:'Юля',d:'Julia'},'Я':{w:'Яблоко',d:'Apfel'}};
+function alphaExampleHtml(letterM){
+  var ex=AQ_EX[letterM];
+  if(!ex)return '';
+  var safe=ex.w.replace(/"/g,'&quot;');
+  // Ziel-Buchstaben im Wort hervorheben (Groß- oder Kleinform, erstes Vorkommen)
+  var shown=ex.w,idx=ex.w.indexOf(letterM),lit=letterM;
+  if(idx<0){var low=letterM.toLowerCase();idx=ex.w.indexOf(low);if(idx>=0)lit=low;}
+  if(idx>=0)shown=ex.w.slice(0,idx)+'<span style="color:var(--cyan);">'+lit+'</span>'+ex.w.slice(idx+lit.length);
+  return '<div style="font-size:.7rem;color:var(--cyan);font-weight:700;margin-bottom:.3rem;">Beispielwort (antippen zum Anhören):</div>'+
+    '<div class="ctx-s"><div class="ctx-ru" data-ru="'+safe+'" style="cursor:pointer;font-size:1.05rem;">&#128266; '+shown+'</div><div class="ctx-de">'+ex.d+'</div></div>';
+}
 let _aqReview=false;
 
 function startAlphabetQuiz2(letters,review){
@@ -3882,6 +3921,7 @@ function showAQLearnCard(letter){
   // scLearn befüllen und anzeigen
   ci=aqIdx; // Mikrofon-Ziel (cb[ci]) auf aktuellen Buchstaben setzen
   document.getElementById('cBadge').textContent=_aqReview?'WIEDERHOLUNG':'BUCHSTABE '+(aqIdx+1)+'/'+aqLetters.length;
+  var _mlb2=document.getElementById('micLBtn');if(_mlb2)_mlb2.style.display='none'; // Alphabet: kein Nachsprechen
   // Groß- UND Kleinbuchstabe zeigen (б sieht ganz anders aus als Б!)
   document.getElementById('cMain').textContent=letter.m+' '+letter.m.toLowerCase();
   // Kursive/Handschrift-Form zeigen (т sieht handschriftlich aus wie m!)
@@ -3894,9 +3934,9 @@ function showAQLearnCard(letter){
   var mn=document.getElementById('cMn');
   if(letter.mn){mn.textContent=letter.mn;mn.style.display='block';}else{mn.style.display='none';}
   var ctxEl=document.getElementById('ctxSents');
-  if(letter.ctx&&letter.ctx.length){
-    ctxEl.innerHTML='<div style="font-size:.7rem;color:var(--cyan);font-weight:700;margin-bottom:.3rem;">Beispielsätze (antippen zum Anhören):</div>'+
-      letter.ctx.map(function(s){return '<div class="ctx-s"><div class="ctx-ru" data-ru="'+s.ru.replace(/"/g,'&quot;')+'" style="cursor:pointer;">&#128266; '+s.ru+'</div><div class="ctx-de">'+s.de+'</div></div>';}).join('');
+  var exHtml=alphaExampleHtml(letter.m);
+  if(exHtml){
+    ctxEl.innerHTML=exHtml;
     ctxEl.querySelectorAll('.ctx-ru').forEach(function(el){el.onclick=function(){spk(el.getAttribute('data-ru'));};});
     ctxEl.style.display='block';
   } else {ctxEl.style.display='none';}
@@ -4126,7 +4166,7 @@ function startDialogMode(){
       return;
     }
     var d=items[di];
-    var online=navigator.onLine&&micRec;
+    var online=speechReady();
     ov.innerHTML='<div class="levelup-box" style="max-width:360px;width:94%;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem;"><span style="font-size:.75rem;color:var(--text3);">&#128172; Dialog &middot; '+(di+1)+'/'+items.length+'</span><button id="dgExit" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.05rem;font-family:inherit;padding:0 .2rem;">&#10005;</button></div>'+
       '<div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r-sm);padding:.8rem;margin-bottom:.7rem;text-align:left;">'+
@@ -4156,17 +4196,14 @@ function startDialogMode(){
     var revBtn=ov.querySelector('#dgReveal');if(revBtn)revBtn.onclick=function(){reveal(null,false);};
     var micBtn=ov.querySelector('#dgMic');
     if(micBtn)micBtn.onclick=function(){
-      if(!navigator.onLine){alert('Die Spracherkennung braucht Internet.');return;}
+      if(!speechReady()){alert(speechOfflineBlocked()?'Die Spracherkennung braucht Internet.':'Spracherkennung nicht verfügbar.');return;}
       micBtn.classList.add('listening');micBtn.innerHTML='&#127908; Höre zu...';
-      micRec.onresult=function(e){
-        var spoken=e.results[0][0].transcript.toLowerCase().trim();
+      recognizeSpeech(function(r){
+        var spoken=r.transcript.toLowerCase().trim();
         var ok=spoken.indexOf(d.a.toLowerCase())>=0||levenshteinSim(spoken,d.h.toLowerCase().replace(/[.!?]/g,''))>=0.55;
         micBtn.classList.remove('listening');micBtn.innerHTML='&#127908; Antwort sprechen';
         reveal(spoken,ok);
-      };
-      micRec.onerror=function(){micBtn.classList.remove('listening');micBtn.innerHTML='&#127908; Antwort sprechen';};
-      micRec.onend=function(){micBtn.classList.remove('listening');if(micBtn.innerHTML.indexOf('Höre')>-1)micBtn.innerHTML='&#127908; Antwort sprechen';};
-      try{micRec.start();}catch(err){micBtn.classList.remove('listening');micBtn.innerHTML='&#127908; Antwort sprechen';}
+      },function(){micBtn.classList.remove('listening');micBtn.innerHTML='&#127908; Antwort sprechen';},function(){micBtn.classList.remove('listening');if(micBtn.innerHTML.indexOf('Höre')>-1)micBtn.innerHTML='&#127908; Antwort sprechen';});
     };
     ov.querySelector('#dgNext').onclick=function(){di++;render();};
   }
@@ -4233,18 +4270,17 @@ function spkPlayWord(){
 }
 
 function startSpkMic(){
-  if(!micRec){alert('Spracherkennung nicht verfügbar auf diesem Gerät.');return;}
-  if(!navigator.onLine){alert('Die Spracherkennung braucht eine Internetverbindung. Alle anderen Übungen funktionieren auch offline!');return;}
+  if(!speechReady()){alert(speechOfflineBlocked()?'Die Spracherkennung braucht eine Internetverbindung. Alle anderen Übungen funktionieren auch offline!':'Spracherkennung nicht verfügbar auf diesem Gerät.');return;}
   var item=cb[spkIdx];
   var btn=document.getElementById('spkMicBtn');
   var res=document.getElementById('spkRes');
   btn.classList.add('listening');btn.innerHTML='&#127908; Höre zu...';
   res.style.display='none';
   document.getElementById('spkConfirm').style.display='none';
-  micRec.onresult=function(e){
-    var spoken=e.results[0][0].transcript.toLowerCase().trim();
+  recognizeSpeech(function(r){
+    var spoken=r.transcript.toLowerCase().trim();
     var target=item.m.toLowerCase().trim();
-    var conf=e.results[0][0].confidence;
+    var conf=r.confidence;
     var match=spoken===target||
       spoken.replace(/\s+/g,'')===target.replace(/\s+/g,'')||
       levenshteinSim(spoken,target)>=0.65;
@@ -4259,14 +4295,13 @@ function startSpkMic(){
       res.style.cssText='display:block;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:var(--r-sm);padding:.5rem .7rem;color:#f97316;';
       res.innerHTML='&#9888; Du sagtest: <strong>"'+spoken+'"</strong> &mdash; Ziel: <strong>"'+item.m+'"</strong>';
     }
-  };
-  micRec.onerror=function(e){
+  },function(err){
     btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';
     res.style.display='block';res.style.cssText='color:var(--text3);font-size:.78rem;';
-    res.innerHTML='Mikrofon-Fehler: '+e.error;
-  };
-  micRec.onend=function(){btn.classList.remove('listening');if(btn.innerHTML.indexOf('Höre')>-1)btn.innerHTML='&#127908; Nachsprechen';};
-  try{micRec.start();}catch(err){btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';}
+    res.innerHTML='Mikrofon-Fehler: '+err;
+  },function(){
+    btn.classList.remove('listening');if(btn.innerHTML.indexOf('Höre')>-1)btn.innerHTML='&#127908; Nachsprechen';
+  });
 }
 
 function nextSpk(){
@@ -4549,8 +4584,8 @@ function loadRF(){
   var rb=document.getElementById('rfBtnR'),fb=document.getElementById('rfBtnF');
   rb.disabled=false;fb.disabled=false;
   rb.style.opacity='1';fb.style.opacity='1';
-  // Kurz vorsprechen
-  setTimeout(function(){spk(item.ru);},300);
+  // Kurz vorsprechen (nicht bei Grammatik — da ist item.ru deutscher Regeltext, nicht Russisch)
+  if(!(cs&&cs.indexOf('grammar')===0))setTimeout(function(){spk(item.ru);},300);
 }
 
 function answerRF(userSaysTrue){
@@ -4860,30 +4895,77 @@ const THEME_VOCAB={
 };
 // ===== ENDE THEMEN =====
 
+var nativeSpeech=false; // true = natives Android-Plugin nutzbar (offline)
+var _srPlugin=null;
+function _capSR(){
+  if(_srPlugin)return _srPlugin;
+  try{
+    var C=window.Capacitor;
+    if(!C)return null;
+    var native=(typeof C.isNativePlatform==='function')?C.isNativePlatform():(C.platform&&C.platform!=='web');
+    if(!native)return null;
+    // 1) Standard-Weg: native Bridge fuellt Capacitor.Plugins fuer registrierte Plugins
+    if(C.Plugins&&C.Plugins.SpeechRecognition){_srPlugin=C.Plugins.SpeechRecognition;return _srPlugin;}
+    // 2) Fallback: registerPlugin (falls global verfuegbar)
+    if(typeof C.registerPlugin==='function'){_srPlugin=C.registerPlugin('SpeechRecognition');return _srPlugin;}
+  }catch(e){}
+  return null;
+}
 function initMic(){
+  // 1) Native App: Android-Spracherkennung (funktioniert offline)
+  if(_capSR()){nativeSpeech=true;return;}
+  // 2) Browser: Web Speech API (braucht Internet)
   if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window))return;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   micRec=new SR();micRec.lang='ru-RU';micRec.continuous=false;micRec.interimResults=false;
 }
+// Ist Nachsprechen gerade moeglich?
+function speechReady(){return nativeSpeech||!!_capSR()||(!!micRec&&navigator.onLine);}
+// Liegt es nur an fehlendem Internet (nur Web-Modus)?
+function speechOfflineBlocked(){return !nativeSpeech&&!!micRec&&!navigator.onLine;}
+// Einheitliche Einmal-Erkennung: onResult({transcript,confidence}); onErr(msg); onEnd()
+function recognizeSpeech(onResult,onErr,onEnd){
+  var sr=_capSR();
+  if(sr){
+    (async function(){
+      try{
+        var perm=await sr.checkPermissions();
+        if(!perm||perm.speechRecognition!=='granted'){perm=await sr.requestPermissions();}
+        if(!perm||perm.speechRecognition!=='granted'){if(onErr)onErr('keine Erlaubnis');if(onEnd)onEnd();return;}
+        var av=await sr.available();
+        if(!av||av.available!==true){if(onErr)onErr('nicht verfuegbar');if(onEnd)onEnd();return;}
+        var r=await sr.start({language:'ru-RU',maxResults:5,partialResults:false,popup:true,prompt:'Sprich das Wort'});
+        var m=(r&&r.matches)||[];
+        if(m.length){onResult({transcript:String(m[0]),confidence:0.9});}
+        else{if(onErr)onErr('nichts erkannt');}
+        if(onEnd)onEnd();
+      }catch(e){
+        if(onErr)onErr((e&&(e.message||e.errorMessage))||'Fehler');if(onEnd)onEnd();
+      }
+    })();
+    return;
+  }
+  if(!micRec){if(onErr)onErr('unavailable');if(onEnd)onEnd();return;}
+  micRec.onresult=function(e){onResult({transcript:e.results[0][0].transcript,confidence:e.results[0][0].confidence});};
+  micRec.onerror=function(e){if(onErr)onErr(e.error);};
+  micRec.onend=function(){if(onEnd)onEnd();};
+  try{micRec.start();}catch(err){if(onErr)onErr('start');}
+}
 function startMic(mode){
-  if(!micRec){alert('Spracherkennung nicht verf\xfcgbar auf diesem Ger\xe4t.');return;}
-  if(!navigator.onLine){alert('Die Spracherkennung braucht eine Internetverbindung. Alle anderen \xdcbungen funktionieren auch offline!');return;}
+  if(!speechReady()){alert(speechOfflineBlocked()?'Die Spracherkennung braucht eine Internetverbindung. Alle anderen \xdcbungen funktionieren auch offline!':'Spracherkennung nicht verf\xfcgbar auf diesem Ger\xe4t.');return;}
   const btnId=mode==='learn'?'micLBtn':'micQBtn',resId=mode==='learn'?'micLRes':'micQRes';
   const btn=document.getElementById(btnId),res=document.getElementById(resId);
   const target=mode==='learn'?cb[ci].m:cb[qi].m;
   btn.classList.add('listening');btn.innerHTML='&#127908; H\xf6re zu...';res.style.display='none';
-  micRec.onresult=(e)=>{
-    const spoken=e.results[0][0].transcript.toLowerCase().trim();
-    const conf=e.results[0][0].confidence;
+  recognizeSpeech((r)=>{
+    const spoken=r.transcript.toLowerCase().trim();
+    const conf=r.confidence;
     const tgt=target.toLowerCase().trim();
     const match=spoken===tgt||spoken.replace(/\s+/g,'')===tgt.replace(/\s+/g,'')||levenshteinSim(spoken,tgt)>=0.7;
     btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';res.style.display='block';
     if(match){res.style.cssText='display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:var(--r-sm);padding:.45rem .7rem;font-size:.78rem;color:#22c55e;margin-top:.4rem;';res.innerHTML='\u2713 Gut! "'+spoken+'" ('+Math.round(conf*100)+'%)';}
     else{res.style.cssText='display:block;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:var(--r-sm);padding:.45rem .7rem;font-size:.78rem;color:#f97316;margin-top:.4rem;';res.innerHTML='\u26a0 Du sagtest: "'+spoken+'" \u2014 Ziel: "'+target+'"';}
-  };
-  micRec.onerror=()=>{btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';};
-  micRec.onend=()=>{btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';};
-  try{micRec.start();}catch(e){btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';}
+  },()=>{btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';},()=>{btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';});
 }
 
 function bldKB(iid,cid){
@@ -4920,7 +5002,7 @@ function startQuiz(){
     }
   }
   if(cs==='grammar'||cs==='grammar_faelle'||cs==='grammar_verben'||cs==='grammar_pronomen'||cs==='grammar_praepositionen'){
-    if(Math.random()<0.4){startRFMode(cb);return;}
+    startRFMode(cb);return; // Grammatik IMMER Richtig/Falsch — das Standard-Quiz passt nicht zu Regeln
   }
   if(cs==='listening'){
     if(Math.random()<0.4){startDiktatMode(cb);return;}

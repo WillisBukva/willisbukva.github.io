@@ -25,7 +25,7 @@ vm.createContext(sandbox);
 // const/let im Script werden nicht global — Daten am Ende explizit exportieren
 const exportCode = ';if(typeof registerVocabThemes==="function"){try{registerVocabThemes();}catch(e){}}' +
   'var __nums=[];if(typeof ruNumber==="function"){for(var __i=1;__i<=100;__i++)__nums.push(ruNumber(__i));for(var __h=1;__h<=9;__h++)__nums.push(ruNumber(__h*100));__nums.push(ruNumber(1000));}' +
-  ';globalThis.__EXPORT={C:typeof C!=="undefined"?C:{},GAP_DATA:typeof GAP_DATA!=="undefined"?GAP_DATA:{},STORIES:typeof STORIES!=="undefined"?STORIES:[],DLG:typeof DLG!=="undefined"?DLG:[],THEME_VOCAB:typeof THEME_VOCAB!=="undefined"?THEME_VOCAB:{},READ_WORDS:typeof READ_WORDS!=="undefined"?READ_WORDS:[],NUMS:__nums,GDRILL:typeof GRAMMAR_DRILL!=="undefined"?GRAMMAR_DRILL:[]};';
+  ';globalThis.__EXPORT={C:typeof C!=="undefined"?C:{},GAP_DATA:typeof GAP_DATA!=="undefined"?GAP_DATA:{},AQ_EX:typeof AQ_EX!=="undefined"?AQ_EX:{},STORIES:typeof STORIES!=="undefined"?STORIES:[],DLG:typeof DLG!=="undefined"?DLG:[],THEME_VOCAB:typeof THEME_VOCAB!=="undefined"?THEME_VOCAB:{},READ_WORDS:typeof READ_WORDS!=="undefined"?READ_WORDS:[],NUMS:__nums,GDRILL:typeof GRAMMAR_DRILL!=="undefined"?GRAMMAR_DRILL:[]};';
 vm.runInContext(m[1] + exportCode, sandbox);
 const X = sandbox.__EXPORT || {};
 
@@ -33,9 +33,13 @@ const texts = new Set();
 const C = X.C || {};
 for (const sec in C) (C[sec] || []).forEach(it => {
   if (it.m) texts.add(it.m.trim());
-  // Beispielsätze (ctx) sind jetzt antippbar → brauchen Audio
-  (it.ctx || []).forEach(s => { if (s.ru) texts.add(s.ru.trim()); });
+  // Beispielsätze (ctx) sind antippbar → brauchen Audio.
+  // Alphabet zeigt jetzt Beispielwörter (AQ_EX) statt Sätzen → ctx hier überspringen.
+  if (sec !== 'alphabet') (it.ctx || []).forEach(s => { if (s.ru) texts.add(s.ru.trim()); });
 });
+// Alphabet-Beispielwörter (antippbar auf der Buchstabenkarte)
+const AQEX = X.AQ_EX || {};
+for (const l in AQEX) { if (AQEX[l] && AQEX[l].w) texts.add(AQEX[l].w.trim()); }
 const GAP = X.GAP_DATA || {};
 for (const l in GAP) ['s1', 's2', 's3', 's4'].forEach(k => { if (GAP[l][k] && GAP[l][k].full) texts.add(GAP[l][k].full.trim()); });
 (X.STORIES || []).forEach(st => texts.add(st.text.map(p => p.ru).join('').trim()));

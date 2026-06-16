@@ -76,11 +76,23 @@ Stand: 11.06.2026
   - Service Worker: Cache-first für Audio/Icons, Network-first für App-Shell
 - [x] Spracherkennung: Hinweis wenn offline (alle 3 Mikrofon-Stellen)
 
+## Erledigt (15.06.2026) — Android-APK gebaut (Bubblewrap/TWA)
+- [x] Weg 2 gewählt: TWA via **Bubblewrap, ohne Android Studio**. Komplette Toolchain lokal unter `D:\Bukva-Build` (JDK 17 Temurin + Android-SDK: cmdline-tools, platform android-36, build-tools 34/35/36, platform-tools/adb); `~/.bubblewrap/config.json` zeigt darauf.
+- [x] Signatur-Keystore erzeugt (`D:\Bukva-Build\twa\android.keystore`, Alias `bukva`, 27 J. gültig). SHA-256: `15:C9:41:F7:D1:D8:21:D0:67:50:F6:4B:1E:2B:76:D9:55:7B:49:32:72:5F:7A:36:DC:18:86:C7:B3:F1:B8:56`. ⚠️ Keystore + Passwort dauerhaft sichern (sonst nie wieder Play-Updates).
+- [x] Build nicht-interaktiv per Skript: `twa-manifest.json` aus Live-Web-Manifest (Paket-ID `de.bukva.app`, Launcher „Bukva"), Projekt vorab generiert → `app-release-signed.apk` (2,4 MB) + `app-release-bundle.aab` (2,5 MB). Verifiziert: korrekt signiert, `de.bukva.app`, v1. Details/Neubau: siehe Memory `bukva-apk-build`.
+- [x] `assetlinks.json` (+ `.nojekyll`) ins Repo gepusht + via Google-API verifiziert → Vollbild ohne Browser-Leiste nach App-Neuinstallation.
+- [ ] Erst-Online-Start nötig (TWA lädt willisbukva.github.io, danach SW-Offline). Offline-ab-Installation nur mit Capacitor.
+
+## Nächster großer Schritt — echte Offline-App mit Capacitor (Nutzer-Entscheid 15.06.2026)
+- [x] **Capacitor-App gebaut (15.06.2026): bündelt index.html + 2200 Audio + Icons IN die App → offline ab Installation.** `Bukva-Offline-v2.apk`, signiert, `de.bukva.app` v2 (Update über die TWA). Natives Nachsprechen (Plugin) integriert — on-device noch zu testen. Details: Memory `bukva-capacitor-build`.
+- [x] Toolchain wiederverwendet; **Capacitor 8 braucht aber JDK 21** (zusätzlich unter `D:\Bukva-Build\jdk21`).
+- [ ] On-Device-Test (Nutzer): Offline + Nachsprechen (Mikro-Abfrage, Erkennung). Offline-Erkennung braucht russisches Sprachpaket auf dem Gerät.
+
 ## Demnächst (Offline)
 - [ ] Spracherkennung nativ/offline → kommt mit Capacitor in der Play-Store-Phase (Android SpeechRecognizer + Offline-Sprachpaket)
 
 ## Später (Play Store, kostenpflichtig)
 - [ ] Backup/Export des Fortschritts (localStorage geht beim Cache-Leeren verloren — 1-Sterne-Risiko!)
 - [ ] Passwörter nicht im Klartext speichern (oder Login-Konzept vereinfachen)
-- [ ] Weg wählen: TWA (Bubblewrap) oder Capacitor
+- [x] Weg gewählt: **TWA (Bubblewrap)** — signierte APK + AAB gebaut (15.06.2026), siehe Erledigt-Abschnitt oben
 - [ ] Google-Play-Developer-Konto, Datenschutzerklärung, Store-Eintrag, Screenshots
