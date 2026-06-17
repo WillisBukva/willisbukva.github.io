@@ -3985,10 +3985,10 @@ function showTimeUp(mins){
 function prefetchAudio(){
   try{
     if(!navigator.onLine)return;
-    if(_lg('ru_audio_prefetched')==='v15')return;
+    if(_lg('ru_audio_prefetched')==='v16')return;
     fetch(AUDIO_BASE+'manifest.json').then(r=>r.json()).then(async files=>{
       for(let i=0;i<files.length;i++){try{await fetch(AUDIO_BASE+files[i]);}catch(e){return;}}
-      _ls('ru_audio_prefetched','v15');
+      _ls('ru_audio_prefetched','v16');
     }).catch(()=>{});
   }catch(e){}
 }

@@ -1,4 +1,4 @@
-const CACHE = 'bukva-v4';
+const CACHE = 'bukva-v5';
 // Relative Pfade, damit es unabhängig vom Deployment-Pfad funktioniert
 // (z. B. Root-Domain oder /russisch-app/ auf GitHub Pages)
 const ASSETS = [
