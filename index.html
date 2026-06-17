@@ -208,6 +208,10 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 .ctx-s{padding:.48rem .72rem;margin-bottom:.32rem;background:rgba(0,229,200,0.04);border:1px solid rgba(0,229,200,0.1);border-radius:var(--r-sm);font-size:.8rem;}
 .ctx-ru{color:var(--text);font-weight:600;margin-bottom:.12rem;}
 .ctx-de{color:var(--text3);font-style:italic;}
+.erkl{margin-bottom:.55rem;}
+.erkl>summary{cursor:pointer;font-size:.72rem;color:var(--cyan);font-weight:700;list-style:none;margin-bottom:.45rem;user-select:none;}
+.erkl>summary::-webkit-details-marker{display:none;}
+.erkl>summary::marker{content:'';}
 
 .gap-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem var(--pad);}
 .gap-badge{display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-size:.65rem;font-weight:700;letter-spacing:.5px;padding:.25rem .6rem;border-radius:20px;margin-bottom:.75rem;text-transform:uppercase;}
@@ -1416,6 +1420,8 @@ grammar_pronomen:[
   {m:"Отрицательные местоимения",t:"Negative Pronomen",s:"Negative Pronomen",e:"никто, ничто, никакой, ничей",x:"ни- + Fragepronomen = kein/niemand/nichts",mn:"никто (niemand), ничто/ничего (nichts), никакой (kein)",o:["ни-+Fragepronomen=niemand/nichts","не+Pronomen","Ohne Präfix","кто-то/что-то"],r:["никто/ничего/никакой","не+местоимение","Без приставки","кто-то/что-то"],ctx:[{ru:"Никто не знает. Ничего не случилось.",de:"Niemand weiß es. Nichts ist passiert."},{ru:"Здесь никого нет.",de:"Hier ist niemand."}]},
   {m:"Местоимение ВЕСЬ / ВСЯ / ВСЁ / ВСЕ",t:"Pronomen весь — ganz/alle",s:"Sonstige Pronomen",e:"весь день (den ganzen Tag), все люди (alle Menschen)",x:"весь(m)/вся(f)/всё(n)/все(pl) = ganz/alle",mn:"весь день, вся семья, всё время, все друзья",o:["весь(m)/вся(f)/всё(n)/все(pl)","Immer все","Immer весь","весь/вся immer gleich"],r:["весь/вся/всё/все по роду","Всегда все","Всегда весь","Одинаково"],ctx:[{ru:"Весь день я работал. Все пришли.",de:"Den ganzen Tag arbeitete ich. Alle kamen."},{ru:"Все люди здесь.",de:"Alle Menschen sind hier."}]},
   {m:"Местоимение ДРУГОЙ / САМИ / САМ",t:"Pronomen другой/сам",s:"Sonstige Pronomen",e:"другой=ein anderer, сам=selbst",x:"другой(m)/другая(f)/другое(n)/другие(pl), сам/сама/само/сами",mn:"другой человек (ein anderer Mensch) / Я сам сделал. (Ich habe es selbst gemacht.)",o:["другой=anderer, сам=selbst","другой=fremd, сам=allein","Kein Unterschied","другой=neu, сам=eigen"],r:["другой=другой, сам=сам","Другие значения","Нет разницы","Другой=новый"],ctx:[{ru:"Я сам приготовил. Дай мне другую книгу.",de:"Ich habe selbst gekocht. Gib mir ein anderes Buch."},{ru:"Я сам это сделал.",de:"Ich habe es selbst gemacht."}]},
+],
+grammar_pronomen2:[
   {m:"Склонение личных местоимений",t:"Deklination der Personalpronomen",s:"Personalpronomen",e:"я→меня→мне→меня→мной→мне",x:"я: меня(Gen/Akk), мне(Dat/Präp), мной(Instr)",mn:"я/меня/мне/меня/мной/мне — ты/тебя/тебе/тебя/тобой/тебе",o:["я→меня→мне→мной","я→яго→яму→яй","Keine Deklination","Immer я"],r:["я/меня/мне/мной","я/яго/яму/яй","Без склонения","Всегда я"],ctx:[{ru:"Он дал мне книгу. Я думаю о тебе.",de:"Er gab mir ein Buch. Ich denke an dich."},{ru:"Он любит меня.",de:"Er liebt mich."}]},
   {m:"Возвратное местоимение СЕБЯ",t:"Reflexivpronomen себя",s:"Reflexivpronomen",e:"себя, себе, собой — sich",x:"себя hat keinen Nominativ — bezieht sich immer auf das Subjekt",mn:"Я вижу себя. Er kauft sich etwas. Думать о себе.",o:["Kein Nominativ, bezieht sich auf Subjekt","Hat Nominativ себ","Nur mit Verben auf -ся","Nur Maskulinum"],r:["Нет им.п., относится к подлежащему","Есть им.п. себ","Только с -ся","Только муж.р."],ctx:[{ru:"Он купил себе машину. Думай о себе.",de:"Er kaufte sich ein Auto. Denk an dich selbst."},{ru:"Он купил себе книгу.",de:"Er hat sich ein Buch gekauft."}]},
   {m:"Относительное местоимение КОТОРЫЙ",t:"Relativpronomen который",s:"Relativpronomen",e:"который/которая/которое/которые",x:"= der/die/das (Relativsatz). Kasus nach Funktion im Nebensatz",mn:"книга, которую я читаю (das Buch, das ich lese)",o:["Kasus nach Funktion im Nebensatz","Immer Nominativ","Immer Akkusativ","Immer Genitiv"],r:["По функции в придаточном","Всегда им.п.","Всегда вин.п.","Всегда род.п."],ctx:[{ru:"Это книга, которую я читал.",de:"Das ist das Buch, das ich gelesen habe."},{ru:"Это дом, который я люблю.",de:"Das ist das Haus, das ich liebe."}]},
@@ -2652,19 +2658,102 @@ const GRAM_LEHR={
 "Притяжательные местоимения":{t:'mein — nach Geschlecht des Nomens',col:'#ff79ad',rows:[['мой (m)','мой стол'],['моя (f)','моя книга'],['моё (n)','моё окно'],['мои (pl)','мои друзья']]},
 "Склонение личных местоимений":{t:'я (ich) in allen Fällen',col:'#5aa9ff',rows:[['Nominativ','я'],['Gen / Akk','меня'],['Dativ','мне'],['Instrumental','мной'],['Präpositional','(обо) мне']]}
 };
-// Reicher Erklär-Block: Geschlechter-Tabelle (genus), Präpositions-Diagramme/Regeln, Konjugations-/Pronomen-Tabelle, oder freies lehr-HTML.
+// Strukturierte Erklärung je Grammatik-Karte (Schlüssel = Karten-m): Wann? / Bildung / Deutsch-Kontrast / häufiger Fehler.
+const GRAM_ERKL={
+// Grundgrammatik
+"Kein 'ist' im Präsens":{wann:"Wenn du im Präsens sagst, wer/was etwas ist (Это книга. Он врач.).",wie:"Einfach Subjekt + Nomen/Adjektiv — gar kein Verb dazwischen.",de:"Deutsch braucht immer ist/bin/sind; Russisch lässt es im Präsens weg.",fehler:"Kein быть einsetzen: nicht 'Он есть врач', sondern Он врач."},
+"Мужской род":{wann:"Um das Geschlecht eines Substantivs zu bestimmen — entscheidet über die Endungen.",wie:"Männlich endet meist auf Konsonant oder -й (стол, чай).",de:"Wie das deutsche Genus, aber erkennbar an der Endung statt am Artikel.",fehler:"Wörter auf -ь können m oder f sein — extra merken."},
+"Женский род":{wann:"Geschlechtsbestimmung für die richtigen Endungen.",wie:"Weiblich endet meist auf -а oder -я (книга, неделя).",de:"Keine Artikel — das Geschlecht steckt in der Endung.",fehler:"папа und дядя enden auf -а, sind aber männlich (Personen)."},
+"Средний род":{wann:"Geschlechtsbestimmung.",wie:"Sächlich endet meist auf -о oder -е (окно, море).",de:"Wie deutsches das, aber an der Endung erkennbar.",fehler:"имя/время enden auf -я, sind aber sächlich (Sonderfall -мя)."},
+"Множественное число":{wann:"Wenn es mehr als eins ist.",wie:"m/f: -ы/-и (столы, книги); n: -а/-я (окна, моря).",de:"Deutsch hat viele Pluralformen; Russisch v. a. -ы/-и bzw. -а/-я.",fehler:"Nach к/г/х/ж/ш/ч steht -и statt -ы (книги, nicht книгы)."},
+"Свободный порядок слов":{wann:"Beim Satzbau — die Wortreihenfolge ist flexibel.",wie:"Meist Subjekt-Verb-Objekt, aber alle Reihenfolgen sind möglich.",de:"Deutsch ist strenger (Verb an Position 2); Russisch viel freier.",fehler:"Das Neue/Wichtige steht oft am Satzende, nicht vorne."},
+"Вопрос через интонацию":{wann:"Ja/Nein-Fragen ohne Fragewort.",wie:"Gleicher Satz wie die Aussage — nur die Stimme geht nach oben.",de:"Deutsch dreht um (Liest du?); Russisch lässt die Wortstellung gleich.",fehler:"Keine Umstellung nötig: Ты дома? = Bist du zu Hause?"},
+"Вопросительные слова":{wann:"Bei W-Fragen (wer, was, wo …).",wie:"Fragewort an den Satzanfang (кто, что, где, когда, почему, как, сколько).",de:"Wie deutsche W-Wörter — Fragewort zuerst.",fehler:"кто = wer (Personen), что = was (Sachen) — nicht verwechseln."},
+"У меня есть":{wann:"Um Besitz auszudrücken (ich habe).",wie:"у + Person im Genitiv + есть + Sache im Nominativ.",de:"Russisch sagt wörtlich 'bei mir ist' — es gibt kein Verb haben.",fehler:"Nicht я имею. Nach у kommt Genitiv: у меня, у тебя."},
+"У меня нет":{wann:"Wenn etwas nicht da ist / fehlt.",wie:"у + Genitiv + нет + Sache im Genitiv.",de:"Deutsch 'ich habe kein Geld'; Russisch 'bei mir ist kein Geld da'.",fehler:"Nach нет immer Genitiv: нет денег (nicht деньги)."},
+"Сравнительная степень":{wann:"Wenn du zwei Dinge vergleichst.",wie:"Kurzform больше/меньше/лучше/хуже; 'als' = Genitiv oder чем.",de:"Deutsch hängt -er an (größer); Russisch nimmt oft ein eigenes Wort.",fehler:"больше брата (Genitiv) oder больше, чем брат."},
+"Степени сравнения прилагательных":{wann:"Positiv → Komparativ → Superlativ.",wie:"хороший → лучше → самый лучший (самый + Adjektiv = Superlativ).",de:"Wie gut / besser / am besten.",fehler:"Superlativ meist mit самый, nicht mit Endung."},
+"Числа и падежи":{wann:"Wenn eine Zahl vor einem Substantiv steht.",wie:"1 → Nominativ, 2-4 → Genitiv Singular, 5+ → Genitiv Plural.",de:"Deutsch ändert nichts (zwei/fünf Tische); Russisch ändert den Fall.",fehler:"5+ braucht Genitiv Plural: пять столов (nicht столы)."},
+"Краткая форма прилагательного":{wann:"Im Prädikat, oft bei Zuständen (рад, готов, занят).",wie:"Kurzform рад/рада/радо/рады — nach Geschlecht und Zahl.",de:"Deutsch nutzt ohnehin die Kurzform (ich bin froh).",fehler:"должен/должна (muss) ändert sich nach Geschlecht."},
+// Pronomen
+"Личные местоимения":{wann:"Statt eines Namens/Substantivs (er, sie, es …).",wie:"я, ты, он, она, оно, мы, вы, они.",de:"вы = höfliches Sie UND ihr (Plural).",fehler:"оно (es) nicht vergessen; ты informell, вы höflich."},
+"Притяжательные местоимения":{wann:"Um Besitz zu zeigen (mein, dein …).",wie:"мой/моя/моё/мои — Endung nach Geschlecht/Zahl des Nomens.",de:"Wie mein/meine, richtet sich aber nach dem besessenen Ding.",fehler:"мой стол, aber моя книга (nach dem Nomen, nicht nach dir)."},
+"его / её / их — неизменяемые":{wann:"sein/ihr/ihr (Besitz 3. Person).",wie:"его/её/их bleiben immer gleich — keine Endung.",de:"Deutsch beugt (sein/seine); Russisch hier nie.",fehler:"Nicht wie мой beugen: immer его дом, его книга."},
+"Указательные местоимения":{wann:"Auf etwas zeigen (dieser/jener).",wie:"этот (nah) / тот (fern), Endung nach Geschlecht (эта/это/эти).",de:"этот = dieser, тот = jener.",fehler:"это (= 'das ist') ≠ этот (dieser) — leicht zu verwechseln."},
+"Вопросительные местоимения":{wann:"Fragen nach Person, Sache oder Eigenschaft.",wie:"кто, что, какой, который, чей.",de:"чей = wessen, какой = was für ein / welcher.",fehler:"кто für Personen, что für Sachen."},
+"Неопределённые местоимения":{wann:"Etwas/jemand Unbestimmtes.",wie:"-то = bestimmtes Unbekanntes, -нибудь = beliebiges.",de:"Deutsch 'irgendwer/irgendwas'; Russisch unterscheidet feiner.",fehler:"кто-то (jemand Konkretes) vs кто-нибудь (irgendwer)."},
+"Отрицательные местоимения":{wann:"niemand / nichts / kein.",wie:"ни- + Fragewort: никто, ничто/ничего, никакой.",de:"Russisch hat doppelte Verneinung: никто НЕ знает.",fehler:"не beim Verb nicht weglassen: Никто не знает."},
+"Местоимение ВЕСЬ / ВСЯ / ВСЁ / ВСЕ":{wann:"ganz / alle.",wie:"весь/вся/всё/все nach Geschlecht und Zahl.",de:"весь день = den ganzen Tag, все = alle.",fehler:"всё (alles, sächlich) ≠ все (alle, Plural)."},
+"Местоимение ДРУГОЙ / САМИ / САМ":{wann:"ein anderer / selbst.",wie:"другой (anderer), сам/сама/сами (selbst).",de:"сам = selbst (ich selbst), другой = ein anderer.",fehler:"сам (selbst) ≠ самый (der -ste, Superlativ)."},
+// Verben
+"Я читаю / ты читаешь":{wann:"Verben der 1. Konjugation im Präsens.",wie:"Endungen -ю/-ешь/-ет/-ем/-ете/-ют.",de:"Wie ich lese/du liest — die Endung zeigt die Person.",fehler:"Das Pronomen darf wegfallen, die Endung reicht."},
+"Я говорю / ты говоришь":{wann:"Verben der 2. Konjugation (oft auf -ить).",wie:"Endungen -ю/-ишь/-ит/-им/-ите/-ят.",de:"Unterschied zur 1. Konj.: -ишь/-ит statt -ешь/-ет.",fehler:"1. und 2. Konjugation nicht verwechseln (-ешь vs -ишь)."},
+"Глагол ХОТЕТЬ":{wann:"wollen/möchten — sehr häufig, unregelmäßig.",wie:"Singular wie 1. Konj. (хочу/хочешь/хочет), Plural wie 2. (хотим/хотите/хотят).",de:"Wie wollen — auch im Deutschen unregelmäßig (ich will).",fehler:"Gemischt: nicht хочем, sondern хотим."},
+"Глагол БЫТЬ":{wann:"sein — Präsens fehlt, Vergangenheit/Zukunft mit быть.",wie:"Vergangenheit был/была/было/были; Zukunft буду/будешь …",de:"Deutsch hat immer bin/war; Russisch nur in Vergangenheit/Zukunft.",fehler:"Im Präsens kein быть: Я дома (nicht Я есть дома)."},
+"Прошедшее время":{wann:"Für Vergangenes.",wie:"Stamm + -л/-ла/-ло/-ли nach Geschlecht/Zahl des Subjekts.",de:"Deutsch beugt nach Person; Russisch im Präteritum nach Geschlecht!",fehler:"Eine Frau sagt читалА, ein Mann читал."},
+"Отрицание: НЕ + глагол":{wann:"Um eine Handlung zu verneinen.",wie:"не direkt vor das Verb stellen.",de:"Wie nicht, aber immer direkt vor dem Verb.",fehler:"не nicht ans Satzende stellen: Я не знаю."},
+"НЕТ + родительный падеж":{wann:"Wenn etwas nicht existiert / fehlt.",wie:"нет + Genitiv (es gibt kein …).",de:"не (verneint das Verb) vs нет (verneint Existenz).",fehler:"Nach нет Genitiv: нет времени (nicht время)."},
+"Будущее время":{wann:"Für Zukünftiges.",wie:"Imperfektiv: буду + Infinitiv; Perfektiv: konjugierte Form (прочитаю).",de:"Deutsch 'werde lesen'; Russisch je nach Aspekt zwei Wege.",fehler:"буду + Perfektiv geht nicht (kein буду прочитать)."},
+"Императив":{wann:"Aufforderung / Befehl.",wie:"Singular -й/-и/-ь, Plural/höflich + -те (читай/читайте).",de:"Wie lies! / lest! — -те ist höflich oder Plural.",fehler:"An Fremde höflich mit -те: Извините! Скажите!"},
+"Модальные слова: можно, нужно, надо":{wann:"dürfen/können, müssen/sollen.",wie:"Unpersönlich + Infinitiv; die Person steht im Dativ (мне нужно).",de:"Kein Nominativ-Subjekt: wörtlich 'mir ist nötig zu …'.",fehler:"Person im Dativ: мне надо (nicht я надо)."},
+"НЕЛЬЗЯ — запрет и невозможность":{wann:"Verbot oder Unmöglichkeit.",wie:"нельзя + Imperfektiv = verboten; нельзя + Perfektiv = unmöglich.",de:"darf nicht / kann nicht.",fehler:"Person im Dativ: мне нельзя."},
+"Глагол ИДТИ / ХОДИТЬ":{wann:"zu Fuß gehen — einmalig vs. regelmäßig.",wie:"идти = jetzt/einmalig, ходить = wiederholt/gewohnheitsmäßig.",de:"Deutsch nur 'gehen'; Russisch unterscheidet zwei Verben.",fehler:"Jeden Tag → ходить; gerade jetzt → идти."},
+"Глагол ЕХАТЬ / ЕЗДИТЬ":{wann:"mit Fahrzeug fahren — einmalig vs. regelmäßig.",wie:"ехать = jetzt/einmalig, ездить = regelmäßig.",de:"Wie идти/ходить, aber mit Verkehrsmittel.",fehler:"Zu Fuß идти, mit Auto/Zug ехать — nicht mischen."},
+"Виды глагола: НСВ и СВ":{wann:"Fast jedes Verb hat zwei Aspekte.",wie:"НСВ (imperfektiv) = Prozess/Wiederholung; СВ (perfektiv) = abgeschlossen.",de:"Deutsch kennt keine Aspekte — schwierig, aber zentral.",fehler:"Ergebnis betont → СВ (прочитал); Prozess → НСВ (читал)."},
+"Возвратные глаголы на -СЯ/-СЬ":{wann:"Reflexive/intransitive Verben (sich …).",wie:"-ся nach Konsonant, -сь nach Vokal (учится, учусь).",de:"Oft wie deutsche sich-Verben (sich freuen).",fehler:"Nach Vokal -сь: я учусь, nicht я учуся."},
+// Fälle
+"Именительный падеж":{wann:"Das Subjekt — wer/was die Handlung tut.",wie:"Grundform aus dem Wörterbuch, keine Änderung.",de:"Wie der deutsche Nominativ (Wer? Was?).",fehler:"Das Subjekt steht immer im Nominativ."},
+"Винительный падеж":{wann:"Direktes Objekt (wen/was) und Richtung (в/на).",wie:"f -а→-у (книгу); m unbelebt = Nominativ; n unverändert.",de:"Wie der deutsche Akkusativ, aber an der Endung sichtbar.",fehler:"Belebte m: Akkusativ = Genitiv (вижу брата)."},
+"Предложный падеж":{wann:"Ort (в/на) und Thema (о) — nur nach Präposition.",wie:"Meist Endung -е (в Москве, о столе).",de:"Heißt so, weil er nur mit Präposition vorkommt.",fehler:"в/на + Präpositional = Ort (wo?), nicht Richtung."},
+"Родительный падеж":{wann:"Besitz, Verneinung (нет), Mengen, nach 2-4.",wie:"m +-а (брата); f -а→-ы (книги).",de:"Wie 'des Bruders', aber viel häufiger gebraucht.",fehler:"Nach нет und nach Zahlen 2-4/5+ steht Genitiv."},
+"Дательный падеж":{wann:"Indirektes Objekt (wem) und bei нравится.",wie:"m +-у (брату); f -а→-е (маме).",de:"Wie 'dem Bruder' (wem?).",fehler:"мне нравится … = mir gefällt … (Person im Dativ)."},
+"Творительный падеж":{wann:"Mittel (womit), Begleitung (с), Beruf.",wie:"m +-ом (ножом); f -а→-ой (ручкой).",de:"Deutsch nutzt 'mit' + Dativ; Russisch hat einen eigenen Fall.",fehler:"Beruf: работать врачом (Instrumental, ohne als)."},
+"Падежные окончания существительных":{wann:"Überblick aller 6 Fall-Endungen.",wie:"стол → стола → столу → стол → столом → столе.",de:"Deutsch beugt den Artikel; Russisch das Wortende.",fehler:"Endungen hängen vom Geschlecht ab — getrennt lernen."},
+"Одушевлённые существительные":{wann:"Belebte männliche Nomen im Akkusativ.",wie:"Akkusativ = Genitiv-Form (вижу брата, друга).",de:"Deutsch unterscheidet belebt/unbelebt nicht so.",fehler:"вижу брата (nicht брат); aber вижу стол (unbelebt unverändert)."},
+"Склонение прилагательных":{wann:"Adjektive passen sich dem Nomen an.",wie:"-ый/-ой (m), -ая (f), -ое (n), -ые (pl).",de:"Wie deutsche Adjektivendungen (ein neuer Tisch).",fehler:"Adjektiv folgt Geschlecht UND Fall des Nomens."},
+"Родительный падеж мн.ч.":{wann:"Nach Zahlen ab 5 und Mengenwörtern (много).",wie:"m oft +-ов (столов); f/n oft Endung weg (книг, окон).",de:"Deutsch 'fünf Tische'; Russisch пять столов (Genitiv Plural).",fehler:"5+ → Genitiv Plural: пять книг (nicht книги)."},
+"Предлоги с падежами":{wann:"в/на: Richtung vs. Ort.",wie:"в/на + Akkusativ = wohin?; в/на + Präpositional = wo?",de:"Wie deutsch 'in die Schule' (wohin) vs 'in der Schule' (wo).",fehler:"иду в школу (Akk) vs учусь в школе (Präp)."},
+// Pronomen-Deklination
+"Склонение личных местоимений":{wann:"Wenn Personalpronomen in anderen Fällen stehen.",wie:"я→меня→мне→меня→мной; ты→тебя→тебе→тобой.",de:"Wie ich/mich/mir — Russisch hat 6 Fälle.",fehler:"Nach Präposition oft н-: у него, к нему."},
+"Возвратное местоимение СЕБЯ":{wann:"Rückbezug aufs Subjekt (sich).",wie:"себя/себе/собой — kein Nominativ.",de:"Wie 'sich', für alle Personen gleich (себя).",fehler:"себя hat keine Nominativ-Form."},
+"Относительное местоимение КОТОРЫЙ":{wann:"Relativsätze (der/die/das …).",wie:"Geschlecht nach dem Bezugswort, Fall nach der Funktion im Nebensatz.",de:"Wie das deutsche Relativpronomen (der Mann, der …).",fehler:"книга, которУЮ я читаю (Akkusativ im Nebensatz)."},
+// Präpositionen
+"В и НА — место и направление":{wann:"Ort oder Richtung angeben.",wie:"+ Akkusativ = wohin?; + Präpositional = wo?",de:"Wie deutsch wohin/wo (in die / in der).",fehler:"на für offene Orte/Events (на работе), в für geschlossene (в доме)."},
+"ИЗ и С — Herkunft":{wann:"Woher (Herkunft).",wie:"из/с + Genitiv; из = aus (Inneres), с = von (Oberfläche).",de:"Gegenstück zu в/на: в→из, на→с.",fehler:"на работу → с работы (nicht из работы)."},
+"К и ОТ — Annäherung/Entfernung":{wann:"zu jemandem hin / von jemandem weg.",wie:"к + Dativ (zu), от + Genitiv (von … weg).",de:"к = zu (Richtung/Person), от = weg von.",fehler:"Nach Präposition н-: к нему, от него."},
+"С + творительный — Begleitung":{wann:"zusammen mit jemandem/etwas.",wie:"с + Instrumental (с другом, с молоком).",de:"Wie 'mit'. Achtung: с hat zwei Bedeutungen (mit / von herab).",fehler:"с + Instrumental (mit) vs с + Genitiv (von … herab)."},
+"О + предложный — über":{wann:"über ein Thema (denken/reden).",wie:"о + Präpositional (о книге, о тебе).",de:"Wie 'über/an' (denken an = думать о).",fehler:"Vor Vokal об: об Анне."},
+"ДЛЯ + родительный — für":{wann:"Zweck/Empfänger (für jemanden).",wie:"для + Genitiv (для тебя, для детей).",de:"Wie 'für' + Akkusativ; Russisch nimmt Genitiv.",fehler:"для + Genitiv: для мамы (nicht мама)."},
+"ИЗ-ЗА / ИЗ-ПОД — wegen/unter":{wann:"Grund (wegen) oder Bewegung 'unter … hervor'.",wie:"из-за/из-под + Genitiv.",de:"из-за = wegen, из-под = unter … hervor.",fehler:"Beide + Genitiv: из-за дождя."},
+"ПЕРЕД / ЗА / МЕЖДУ + тв.пад.":{wann:"Position: vor / hinter / zwischen.",wie:"Alle + Instrumental (перед домом, за углом, между нами).",de:"Lage-Präpositionen — hier Instrumental.",fehler:"за + Instrumental (Ort) vs за + Akkusativ (Richtung/für)."},
+"ПО + дательный — entlang/gemäß":{wann:"entlang, nach (Fach/Plan), per.",wie:"по + Dativ (по улице, по-русски, по телефону).",de:"Vielseitig: entlang / laut / per.",fehler:"по + Dativ: по плану, по телефону."},
+"ПРИ + предложный — bei/zu Zeiten":{wann:"in Gegenwart / zur Zeit von / bei Bedingung.",wie:"при + Präpositional (при мне, при Петре).",de:"Wie 'bei/unter' (zur Zeit von).",fehler:"при ≠ у: при мне = in meiner Gegenwart."},
+"ЧЕРЕЗ + винительный — durch/in":{wann:"durch (Raum) / in (Zeitspanne).",wie:"через + Akkusativ (через час, через мост).",de:"через час = in einer Stunde.",fehler:"через + Akkusativ (es gibt keine Genitiv-Form)."},
+"БЕЗ + родительный — ohne":{wann:"ohne etwas/jemanden.",wie:"без + Genitiv (без сахара, без тебя).",de:"Wie 'ohne' + Akkusativ; Russisch nimmt Genitiv.",fehler:"без + Genitiv: без денег (nicht деньги)."},
+"ПОСЛЕ и ДО + родительный":{wann:"zeitlich nach / vor.",wie:"после/до + Genitiv (после обеда, до встречи).",de:"после = nach, до = bis/vor.",fehler:"Beide + Genitiv: до свидания, после работы."}
+};
+function erklBlock(item){
+  var e=GRAM_ERKL[item.m];if(!e)return '';
+  function r(ic,lb,tx){return tx?'<div style="margin-bottom:.4rem;line-height:1.4;"><span style="color:var(--cyan);font-weight:700;">'+ic+' '+lb+'</span> '+tx+'</div>':'';}
+  return '<details open class="erkl"><summary>&#8505;&#65039; Erkl\xe4rung</summary><div style="background:rgba(0,229,200,0.05);border:1px solid rgba(0,229,200,0.16);border-radius:var(--r-sm);padding:.6rem .7rem;margin-bottom:.6rem;font-size:.82rem;color:var(--text);">'+r('&#128205;','Wann?',e.wann)+r('&#128296;','Bildung:',e.wie)+r('&#127465;&#127466;','Deutsch:',e.de)+r('&#9888;&#65039;','Fehler:',e.fehler)+'</div></details>';
+}
+// Reicher Erklär-Block: Erklärung (GRAM_ERKL) + Geschlechter-Tabelle (genus) / Präpositions-Diagramme / Konjugations-Tabelle / freies lehr-HTML.
 function grammarExtraHtml(item){
-  if(item.genus)return genusTabelle(item.genus);
-  var pd=PRAEP_DATA[item.m];
-  if(pd){
-    var h='';
-    if(pd.dia)h+='<div style="display:flex;gap:.4rem;margin-bottom:.6rem;">'+pd.dia.split(',').map(function(t){return praepDia(t);}).join('')+'</div>';
-    if(pd.pr)h+=praepRegel(pd.pr);
-    return h+(item.lehr||'');
+  var base;
+  if(item.genus){base=genusTabelle(item.genus);}
+  else{
+    var pd=PRAEP_DATA[item.m];
+    if(pd){
+      var h='';
+      if(pd.dia)h+='<div style="display:flex;gap:.4rem;margin-bottom:.6rem;">'+pd.dia.split(',').map(function(t){return praepDia(t);}).join('')+'</div>';
+      if(pd.pr)h+=praepRegel(pd.pr);
+      base=h+(item.lehr||'');
+    }else{
+      var gl=GRAM_LEHR[item.m];
+      base=gl?gramTab(gl.t,gl.rows,gl.col)+(item.lehr||''):(item.lehr||'');
+    }
   }
-  var gl=GRAM_LEHR[item.m];
-  if(gl)return gramTab(gl.t,gl.rows,gl.col)+(item.lehr||'');
-  return item.lehr||'';
+  return erklBlock(item)+base;
 }
 
 // ── GRAMMATIK-TRAINER (Anwendung statt Begriffe) ──────────────────
@@ -2735,7 +2824,7 @@ const GRAMMAR_DRILL=[
   {cat:'Grundlagen',q:'Один стол, два ___.',base:'nach 2',answer:'стола',opts:['стол','стола','столов','столы'],de:'Ein Tisch, zwei Tische.',hint:'Nach 2–4: Genitiv Singular (стол → стола)'}
 ];
 // Grammatik-Sektion → passende Trainer-Kategorie (fürs Quiz nach dem Lernen)
-const GRAMMAR_CAT={grammar:'Grundlagen',grammar_faelle:'Fälle',grammar_verben:'Verben',grammar_pronomen:'Pronomen',grammar_praepositionen:'Präpos.'};
+const GRAMMAR_CAT={grammar:'Grundlagen',grammar_faelle:'Fälle',grammar_verben:'Verben',grammar_pronomen:'Pronomen',grammar_pronomen2:'Pronomen',grammar_praepositionen:'Präpos.'};
 function startGrammarDrill(cat){
   var pool=GRAMMAR_DRILL.filter(function(x){return !cat||x.cat===cat;});
   if(pool.length<4)pool=GRAMMAR_DRILL;
@@ -2779,6 +2868,7 @@ function showGrammarMenu(){
     {key:'grammar_pronomen',icon:'&#128100;',title:'Pronomen',desc:'Personal- und Possessivpronomen',count:C.grammar_pronomen?C.grammar_pronomen.length:0},
     {key:'grammar_verben',icon:'&#9997;️',title:'Verben & Zeitformen',desc:'Konjugation, Vergangenheit, Zukunft',count:C.grammar_verben?C.grammar_verben.length:0},
     {key:'grammar_faelle',icon:'&#128218;',title:'Fälle & Deklination',desc:'Die 6 russischen Fälle + Adjektive',count:C.grammar_faelle?C.grammar_faelle.length:0},
+    {key:'grammar_pronomen2',icon:'&#128100;',title:'Pronomen-Deklination',desc:'Fälle der Pronomen: меня, себя, который',count:C.grammar_pronomen2?C.grammar_pronomen2.length:0},
     {key:'grammar_praepositionen',icon:'&#128205;',title:'Präpositionen',desc:'Orts- und Zeitpräpositionen',count:C.grammar_praepositionen?C.grammar_praepositionen.length:0},
   ];
   var inner='<div class="levelup-box" style="max-width:360px;width:94%;padding:1.5rem 1.2rem;">';
@@ -2827,7 +2917,7 @@ function updateLastSession(){
       vocab_kultur:'Kultur',vocab_studium:'Studium',vocab_allgemein:'Alltag',
       grammar:'Grundgrammatik',
       grammar_faelle:'Fälle & Deklination',grammar_verben:'Verben & Zeitformen',
-      grammar_pronomen:'Pronomen',grammar_praepositionen:'Präpositionen',
+      grammar_pronomen:'Pronomen',grammar_pronomen2:'Pronomen-Deklination',grammar_praepositionen:'Präpositionen',
       listening:'Hören',speaking:'Sprechen',sentences:'Sätze',
       reading:'Lesen',numbers:'Zahlen',colors:'Farben',
       weekdays:'Wochentage',custom:'Eigene Vokabeln'};
@@ -2949,6 +3039,7 @@ const SEC_REQS={
   grammar_faelle:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   grammar_verben:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   grammar_pronomen:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
+  grammar_pronomen2:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   grammar_praepositionen:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   speaking:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
   sentences:{sec:'vocabulary',n:10,label:'10 Vokabeln lernen'},
@@ -2961,13 +3052,13 @@ function getSecRecommendation(secId,d){
 
 // Roter Faden der Tages-Session: Alphabet zuerst; Wörter, sobald man genug
 // Buchstaben zum Lesen hat; ab 10 Wörtern Sätze; danach Grammatik & Fertigkeiten.
-const LEARN_ORDER=['alphabet','vocabulary','numbers','colors','weekdays','vocab_top1','grammar','grammar_pronomen','vocab_top2','listening','grammar_verben','speaking','vocab_top3','sentences','grammar_faelle','vocab_top4','reading','grammar_praepositionen','vocab_top5','vocab_top6'];
+const LEARN_ORDER=['alphabet','vocabulary','numbers','colors','weekdays','vocab_top1','grammar','grammar_pronomen','vocab_top2','listening','grammar_verben','speaking','vocab_top3','sentences','grammar_faelle','grammar_pronomen2','vocab_top4','reading','grammar_praepositionen','vocab_top5','vocab_top6'];
 // Kapazitäts-Voraussetzungen NUR für die Tages-Session (Dashboard bleibt frei wählbar):
 const DAILY_REQS={
   vocabulary:{sec:'alphabet',n:12},                                   // 12 Buchstaben → Wörter lesbar
   numbers:{sec:'vocabulary',n:5},colors:{sec:'vocabulary',n:5},weekdays:{sec:'vocabulary',n:5},
   vocab_top1:{sec:'vocabulary',n:10},vocab_top2:{sec:'vocabulary',n:10},vocab_top3:{sec:'vocabulary',n:10},vocab_top4:{sec:'vocabulary',n:10},vocab_top5:{sec:'vocabulary',n:10},vocab_top6:{sec:'vocabulary',n:10},
-  grammar:{sec:'vocabulary',n:10},grammar_faelle:{sec:'vocabulary',n:10},grammar_verben:{sec:'vocabulary',n:10},grammar_pronomen:{sec:'vocabulary',n:10},grammar_praepositionen:{sec:'vocabulary',n:10},
+  grammar:{sec:'vocabulary',n:10},grammar_faelle:{sec:'vocabulary',n:10},grammar_verben:{sec:'vocabulary',n:10},grammar_pronomen:{sec:'vocabulary',n:10},grammar_pronomen2:{sec:'vocabulary',n:10},grammar_praepositionen:{sec:'vocabulary',n:10},
   listening:{sec:'vocabulary',n:10},speaking:{sec:'vocabulary',n:10},
   sentences:{sec:'vocabulary',n:10},                                  // 10 Wörter → Sätze bildbar
   reading:{sec:'vocabulary',n:25}
@@ -2980,7 +3071,7 @@ function eligibleSections(d){return LEARN_ORDER.filter(function(id){return _secF
 function sectionLabel(id){
   var sec=SECS.find(function(s){return s.id===id;});
   if(sec)return sec.title.replace(/^\d+\.\s*/,'');
-  var names={vocab_top1:'Häufigste Wörter 1–100',vocab_top2:'Häufigste Wörter 101–200',vocab_top3:'Häufigste Wörter 201–300',vocab_top4:'Häufigste Wörter 301–400',vocab_top5:'Häufigste Wörter 401–500',vocab_top6:'Häufigste Wörter 501–520',grammar_faelle:'Fälle & Deklination',grammar_verben:'Verben & Zeitformen',grammar_pronomen:'Pronomen',grammar_praepositionen:'Präpositionen'};
+  var names={vocab_top1:'Häufigste Wörter 1–100',vocab_top2:'Häufigste Wörter 101–200',vocab_top3:'Häufigste Wörter 201–300',vocab_top4:'Häufigste Wörter 301–400',vocab_top5:'Häufigste Wörter 401–500',vocab_top6:'Häufigste Wörter 501–520',grammar_faelle:'Fälle & Deklination',grammar_verben:'Verben & Zeitformen',grammar_pronomen:'Pronomen',grammar_pronomen2:'Pronomen-Deklination',grammar_praepositionen:'Präpositionen'};
   return names[id]||id;
 }
 function sectionIcon(id){var sec=SECS.find(function(s){return s.id===id;});if(sec)return sec.icon;if(id.indexOf('vocab_top')===0)return '&#128293;';if(id.indexOf('grammar_')===0)return '&#128209;';return '&#9654;';}
@@ -2999,7 +3090,7 @@ function launchSection(id){
 }
 
 // Gesamtfortschritt über das Kern-Curriculum + Sprachniveau-Meilenstein
-const CURRICULUM=['alphabet','vocabulary','vocab_top1','vocab_top2','vocab_top3','vocab_top4','vocab_top5','vocab_top6','numbers','colors','weekdays','grammar','grammar_pronomen','grammar_verben','grammar_faelle','grammar_praepositionen','listening','speaking','sentences','reading'];
+const CURRICULUM=['alphabet','vocabulary','vocab_top1','vocab_top2','vocab_top3','vocab_top4','vocab_top5','vocab_top6','numbers','colors','weekdays','grammar','grammar_pronomen','grammar_verben','grammar_faelle','grammar_pronomen2','grammar_praepositionen','listening','speaking','sentences','reading'];
 function computeOverallProgress(d){
   var done=0,total=0;
   CURRICULUM.forEach(function(id){
@@ -3034,6 +3125,7 @@ const MASTERY_MSG={
   grammar_faelle:{i:'&#128218;',t:'Fälle-Bezwinger!',x:'Die 6 russischen Fälle — der Endgegner der Grammatik ist besiegt! &#128170;'},
   grammar_verben:{i:'&#9997;&#65039;',t:'Verben-Versteher!',x:'Konjugation, Vergangenheit, Zukunft — du kriegst jedes Verb in Form!'},
   grammar_pronomen:{i:'&#128100;',t:'Pronomen-Profi!',x:'я, ты, мой, который — du hast alle Pronomen im Griff!'},
+  grammar_pronomen2:{i:'&#128100;',t:'Pronomen-Deklination gemeistert!',x:'меня, себя, который — die Pronomen-Fälle sitzen!'},
   grammar_praepositionen:{i:'&#128205;',t:'Präpositions-Meister!',x:'в, на, для, через — du weißt immer, welcher Fall kommt!'},
   listening:{i:'&#127911;',t:'Spitzen-Ohren!',x:'Du verstehst gesprochenes Russisch — kein Gespräch entgeht dir mehr!'},
   speaking:{i:'&#127908;',t:'Sprach-Talent!',x:'Aussprache sitzt — jetzt traust du dich, einfach loszureden!'},
@@ -3353,6 +3445,7 @@ const DIFF_RANGES={
   grammar_faelle:{anfaenger:[0,999],standard:[0,999],fort:[0,999],profi:[0,999]},
   grammar_verben:{anfaenger:[0,999],standard:[0,999],fort:[0,999],profi:[0,999]},
   grammar_pronomen:{anfaenger:[0,999],standard:[0,999],fort:[0,999],profi:[0,999]},
+  grammar_pronomen2:{anfaenger:[0,999],standard:[0,999],fort:[0,999],profi:[0,999]},
   grammar_praepositionen:{anfaenger:[0,999],standard:[0,999],fort:[0,999],profi:[0,999]},
   numbers:{anfaenger:[0,10],standard:[0,32],fort:[0,46],profi:[0,999]},
   colors:{anfaenger:[0,6],standard:[0,9],fort:[0,999],profi:[0,999]},
@@ -3451,7 +3544,7 @@ function loadCard(){
   const item=cb[ci];
   // Gap-Karte: andere Darstellung
   if(item&&item.type==='gap'){loadGapCard(item);return;}
-  const lb={alphabet:'BUCHSTABE',vocabulary:'VOKABEL',vocab_urlaub:'URLAUB',vocab_beruf:'BERUF',vocab_familie:'FAMILIE',vocab_kultur:'KULTUR',vocab_studium:'STUDIUM',vocab_allgemein:'ALLTAG',grammar:'GRAMMATIK',grammar_faelle:'FÄLLE',grammar_verben:'VERBEN',grammar_pronomen:'PRONOMEN',grammar_praepositionen:'PRÄPOS.',listening:'H\xd6REN',speaking:'SPRECHEN',sentences:'SATZ',reading:'TEXT',numbers:'ZAHL',colors:'FARBE',weekdays:'WOCHENTAG',custom:'EIGENE'};
+  const lb={alphabet:'BUCHSTABE',vocabulary:'VOKABEL',vocab_urlaub:'URLAUB',vocab_beruf:'BERUF',vocab_familie:'FAMILIE',vocab_kultur:'KULTUR',vocab_studium:'STUDIUM',vocab_allgemein:'ALLTAG',grammar:'GRAMMATIK',grammar_faelle:'FÄLLE',grammar_verben:'VERBEN',grammar_pronomen:'PRONOMEN',grammar_pronomen2:'PRONOMEN II',grammar_praepositionen:'PRÄPOS.',listening:'H\xd6REN',speaking:'SPRECHEN',sentences:'SATZ',reading:'TEXT',numbers:'ZAHL',colors:'FARBE',weekdays:'WOCHENTAG',custom:'EIGENE'};
   document.getElementById('cBadge').textContent=lb[cs]||(cs&&cs.indexOf('vocab_top')===0?'TOP-WORT':cs.toUpperCase());
   // Alphabet: Nachsprechen ausblenden — Spracherkennung erkennt einzelne Buchstaben nicht zuverlaessig
   var _mlb=document.getElementById('micLBtn');if(_mlb)_mlb.style.display=(cs==='alphabet')?'none':'';
