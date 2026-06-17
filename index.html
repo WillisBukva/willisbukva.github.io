@@ -238,7 +238,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 </style>
 </head>
 <body>
-<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 13</div>
+<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 14</div>
 <div class="flash" id="flash"></div>
 <div class="s-tooltip" id="tooltip"></div>
 <svg width="0" height="0" style="position:absolute">
@@ -2738,6 +2738,80 @@ const GRAM_ERKL={
 "БЕЗ + родительный — ohne":{wann:"ohne etwas/jemanden.",wie:"без + Genitiv (без сахара, без тебя).",de:"Wie 'ohne' + Akkusativ; Russisch nimmt Genitiv.",fehler:"без + Genitiv: без денег (nicht деньги)."},
 "ПОСЛЕ и ДО + родительный":{wann:"zeitlich nach / vor.",wie:"после/до + Genitiv (после обеда, до встречи).",de:"после = nach, до = bis/vor.",fehler:"Beide + Genitiv: до свидания, после работы."}
 };
+// Großer Klartext-Titel je Grammatik-Karte (Schlüssel = Karten-m). Genus-Karten (Geschlechter) haben eigene Anzeige und stehen hier NICHT.
+const GRAM_TITEL={
+// Grundgrammatik
+"Личные местоимения":"Ich, du, er, sie …",
+"Kein 'ist' im Präsens":"Sätze ohne 'ist'",
+"Это …":"Das ist … / Was ist das?",
+"да / нет / не":"Ja, nein, nicht",
+"и / а / но":"und / aber (и, а, но)",
+"Множественное число":"Mehrzahl (Plural)",
+"Свободный порядок слов":"Wortreihenfolge ist frei",
+"Вопрос через интонацию":"Fragen ohne Fragewort",
+"Вопросительные слова":"Wer? Was? Wo? Wann?",
+"У меня есть":"Ich habe … (у меня есть)",
+"У меня нет":"Ich habe kein … (нет)",
+"Сравнительная степень":"größer, besser, schlechter",
+"Степени сравнения прилагательных":"gut – besser – am besten",
+"Числа и падежи":"Zahlen + Hauptwort",
+"Краткая форма прилагательного":"froh, bereit, fertig (Kurzform)",
+// Pronomen
+"Притяжательные местоимения":"mein, dein, sein …",
+"его / её / их — неизменяемые":"sein, ihr (его, её, их)",
+"Указательные местоимения":"dieser / jener (этот/тот)",
+"Вопросительные местоимения":"wer? was? welcher?",
+"Неопределённые местоимения":"jemand, etwas, irgendwer",
+"Отрицательные местоимения":"niemand, nichts",
+"Местоимение ВЕСЬ / ВСЯ / ВСЁ / ВСЕ":"ganz, alle (весь)",
+"Местоимение ДРУГОЙ / САМИ / САМ":"selbst / ein anderer",
+// Verben
+"Я читаю / ты читаешь":"ich lese, du liest (1. Konjug.)",
+"Я говорю / ты говоришь":"ich spreche, du sprichst (2. Konjug.)",
+"Глагол ХОТЕТЬ":"wollen (хотеть)",
+"Глагол БЫТЬ":"sein (быть)",
+"Прошедшее время":"Vergangenheit (war, las …)",
+"Отрицание: НЕ + глагол":"nicht (не)",
+"НЕТ + родительный падеж":"es gibt kein … (нет)",
+"Будущее время":"Zukunft (werde …)",
+"Императив":"Befehl: Lies! Hör zu!",
+"Модальные слова: можно, нужно, надо":"darf, muss, soll",
+"НЕЛЬЗЯ — запрет и невозможность":"verboten / unmöglich (нельзя)",
+"Глагол ИДТИ / ХОДИТЬ":"gehen: jetzt vs. immer",
+"Глагол ЕХАТЬ / ЕЗДИТЬ":"fahren: jetzt vs. immer",
+"Виды глагола: НСВ и СВ":"Prozess vs. fertig (Aspekt)",
+"Возвратные глаголы на -СЯ/-СЬ":"sich … (-ся/-сь)",
+// Fälle
+"Именительный падеж":"Wer? Was? (Subjekt)",
+"Винительный падеж":"Wen? Was? (Objekt)",
+"Предложный падеж":"Wo? Worüber?",
+"Родительный падеж":"Wessen? / von wem?",
+"Дательный падеж":"Wem? (geben)",
+"Творительный падеж":"Womit? Mit wem?",
+"Падежные окончания существительных":"Alle 6 Fall-Endungen",
+"Одушевлённые существительные":"belebt: Wen sehe ich?",
+"Склонение прилагательных":"Adjektiv-Endungen",
+"Родительный падеж мн.ч.":"ab 5: viele … (Genitiv Plural)",
+"Предлоги с падежами":"wohin? vs. wo? (в/на)",
+// Pronomen-Deklination
+"Склонение личных местоимений":"mich, mir (меня, мне …)",
+"Возвратное местоимение СЕБЯ":"sich (себя)",
+"Относительное местоимение КОТОРЫЙ":"…, der/die/das (который)",
+// Präpositionen
+"В и НА — место и направление":"in, auf (в, на)",
+"ИЗ и С — Herkunft":"aus, von – woher?",
+"К и ОТ — Annäherung/Entfernung":"zu … / weg von (к, от)",
+"С + творительный — Begleitung":"mit (с …)",
+"О + предложный — über":"über / an (о …)",
+"ДЛЯ + родительный — für":"für (для …)",
+"ИЗ-ЗА / ИЗ-ПОД — wegen/unter":"wegen / unter … hervor",
+"ПЕРЕД / ЗА / МЕЖДУ + тв.пад.":"vor, hinter, zwischen",
+"ПО + дательный — entlang/gemäß":"entlang / per (по …)",
+"ПРИ + предложный — bei/zu Zeiten":"bei / zur Zeit von (при)",
+"ЧЕРЕЗ + винительный — durch/in":"durch / in (через …)",
+"БЕЗ + родительный — ohne":"ohne (без …)",
+"ПОСЛЕ и ДО + родительный":"nach / vor (после, до)"
+};
 function erklBlock(item){
   var e=GRAM_ERKL[item.m];if(!e)return '';
   function r(ic,lb,tx){return tx?'<div style="margin-bottom:.4rem;line-height:1.4;"><span style="color:var(--cyan);font-weight:700;">'+ic+' '+lb+'</span> '+tx+'</div>':'';}
@@ -3577,6 +3651,12 @@ function loadCard(){
     document.getElementById('cSub').textContent=item.m+' · '+item.s;
   } else if(cs==='grammar_faelle'&&KASUS_COL[item.s]){
     document.getElementById('cTrans').innerHTML='= <span style="color:'+KASUS_COL[item.s]+';font-weight:900;">'+item.t+'</span>';
+  }
+  // Grammatik (außer Genus-Karten): große Überschrift = deutscher Klartext + Beispiel; russischer Fachbegriff klein.
+  if(cs&&cs.indexOf('grammar')===0&&!item.genus){
+    document.getElementById('cMain').textContent=GRAM_TITEL[item.m]||item.m;
+    var _a2t=/·\s*A2/.test(item.s||'')?'  ·  A2':'';
+    document.getElementById('cSub').textContent=item.m+_a2t;
   }
   // Monate sind fast wie im Deutschen → Motivations-Hinweis
   var MONTHS_RU=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
