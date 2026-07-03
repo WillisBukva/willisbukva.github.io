@@ -92,6 +92,10 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 .diff-ind .dl{flex:1;font-size:.88rem;font-weight:600;}
 .diff-ind .dc{font-size:.73rem;color:var(--text3);}
 .pfad-title{font-size:.82rem;font-weight:700;margin-bottom:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;}
+/* Nächster Schritt im Lernpfad: hervorgehoben, damit man sofort sieht, wo es weitergeht (Tester-Feedback) */
+.pfad-next{border-color:rgba(0,229,200,.55)!important;background:rgba(0,229,200,.06)!important;animation:pfadPulse 2.2s ease-in-out infinite;}
+@keyframes pfadPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,229,200,.3);}50%{box-shadow:0 0 0 7px rgba(0,229,200,0);}}
+.pfad-next-badge{display:inline-block;font-size:.58rem;font-weight:800;color:#003b33;background:var(--cyan);border-radius:20px;padding:.1rem .45rem;margin-left:.35rem;vertical-align:middle;letter-spacing:.5px;white-space:nowrap;}
 .pfad-row{padding:.9rem 1rem;display:flex;align-items:center;gap:.8rem;cursor:pointer;margin-bottom:.5rem;transition:all .25s;position:relative;overflow:hidden;}
 .pfad-row:hover{border-color:var(--border2);transform:translateX(4px);}
 .pfad-row.locked{opacity:.4;cursor:not-allowed;}
@@ -207,6 +211,10 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 .s-tooltip{position:fixed;background:rgba(0,229,200,0.9);color:#000;font-size:.78rem;font-weight:700;padding:.28rem .55rem;border-radius:6px;pointer-events:none;z-index:999;display:none;transform:translateX(-50%);}
 .ctx-s{padding:.48rem .72rem;margin-bottom:.32rem;background:rgba(0,229,200,0.04);border:1px solid rgba(0,229,200,0.1);border-radius:var(--r-sm);font-size:.8rem;}
 .ctx-ru{color:var(--text);font-weight:600;margin-bottom:.12rem;}
+/* „Helle Stelle": gesprochener Text leuchtet während der Wiedergabe (Tester-Feedback) */
+.spk-hl{background:rgba(0,229,200,.22)!important;box-shadow:0 0 0 4px rgba(0,229,200,.22)!important;border-radius:8px;}
+.ctx-slow{cursor:pointer;opacity:.7;margin-left:.35rem;}
+.ctx-slow:hover{opacity:1;}
 .ctx-de{color:var(--text3);font-style:italic;}
 .erkl{margin-bottom:.55rem;}
 .erkl>summary{cursor:pointer;font-size:.72rem;color:var(--cyan);font-weight:700;list-style:none;margin-bottom:.45rem;user-select:none;}
@@ -238,7 +246,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 </style>
 </head>
 <body>
-<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 14</div>
+<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 15</div>
 <div class="flash" id="flash"></div>
 <div class="s-tooltip" id="tooltip"></div>
 <svg width="0" height="0" style="position:absolute">
@@ -305,7 +313,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 
   <!-- Schritt 2: Kenntnisse -->
   <div id="onbStep2" style="display:none;">
-    <h3 style="font-size:.95rem;font-weight:800;margin-bottom:.8rem;">&#127919; Wie gut kennst du Russisch?</h3>
+    <h3 style="font-size:.95rem;font-weight:800;margin-bottom:.8rem;">&#127919; Wie gut kannst du Russisch?</h3>
     <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;">
       <div class="onb-card wide" data-level="anfaenger" onclick="selectLevel(this)">&#128640; Kompletter Anfänger — ich kenne nichts</div>
       <div class="onb-card wide" data-level="anfaenger" onclick="selectLevel(this)">&#128218; Ich kenne das Alphabet und einige Wörter</div>
@@ -413,7 +421,8 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="card-mn" id="cMn" style="display:none;"></div>
 <div id="ctxSents" style="display:none;margin-top:.65rem;"></div>
 <div id="micArea" style="display:flex;gap:.5rem;justify-content:center;margin-top:.82rem;flex-wrap:wrap;">
-<button class="btn sm" id="btnAnhoeren" onclick="spk(cb[ci].m)">&#128266; Anh&#246;ren</button>
+<button class="btn sm" id="btnAnhoeren" onclick="spk(cb[ci].m,null,document.getElementById('cMain'))">&#128266; Anh&#246;ren</button>
+<button class="btn sm" id="btnLangsam" onclick="spkSlow(cb[ci].m,document.getElementById('cMain'))">&#128034; Langsam</button>
 <button class="mic-btn" id="micLBtn" onclick="startMic('learn')">&#127908; Nachsprechen</button>
 </div>
 <div class="mic-result" id="micLRes"></div>
@@ -443,7 +452,8 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="quiz-q" id="qQ">&#1040;</div>
 <div class="quiz-prompt" id="qPrompt">Was ist die Aussprache?</div>
 <div style="text-align:center;margin-bottom:.6rem;display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;">
-<button class="btn sm" onclick="spk(cb[qi].m)">&#128266; Aussprache</button>
+<button class="btn sm" onclick="spk(cb[qi].m,null,document.getElementById('qQ'))">&#128266; Aussprache</button>
+<button class="btn sm" onclick="spkSlow(cb[qi].m,document.getElementById('qQ'))" title="Langsam anh&#246;ren">&#128034;</button>
 <button class="mic-btn" id="micQBtn" onclick="startMic('quiz')" style="padding:.35rem .75rem;font-size:.75rem;">&#127908; Nachsprechen</button>
 </div>
 <div id="suggWrap"><div class="sugg-lbl">Vorschl&#228;ge (oder selbst eintippen):</div><div class="suggs" id="suggs"></div></div>
@@ -500,7 +510,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="dots" id="retryDots"></div>
 <div class="quiz-q" id="retryQ">&#1040;</div>
 <div class="quiz-prompt" id="retryPrompt">Was ist die Aussprache?</div>
-<div style="text-align:center;margin-bottom:.6rem;"><button class="btn sm" onclick="spk(retryCb[retryQi].m)">&#128266; Aussprache</button></div>
+<div style="text-align:center;margin-bottom:.6rem;"><button class="btn sm" onclick="spk(retryCb[retryQi].m,null,document.getElementById('retryQ'))">&#128266; Aussprache</button> <button class="btn sm" onclick="spkSlow(retryCb[retryQi].m,document.getElementById('retryQ'))" title="Langsam anh&#246;ren">&#128034;</button></div>
 <div class="suggs" id="retrySuggs"></div>
 <input class="qi" id="retryIn" type="text" placeholder="Deine Antwort...">
 <div class="hint-box" id="retryHint"></div>
@@ -555,7 +565,7 @@ Noch keine eigenen Vokabeln.<br>Füge deine ersten Karten hinzu!
     <div id="spkSub" style="font-size:.78rem;color:var(--text2);margin-bottom:.9rem;"></div>
     <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:.8rem;">
       <button class="btn sm" onclick="spkPlayWord()">&#128266; Vorsprechen</button>
-      <button class="btn sm" onclick="if(cb[spkIdx])spkSlow(cb[spkIdx].m)">&#128034; Langsam</button>
+      <button class="btn sm" onclick="if(cb[spkIdx])spkSlow(cb[spkIdx].m,document.getElementById('spkMain'))">&#128034; Langsam</button>
       <button class="btn sm" id="spkMicBtn" onclick="startSpkMic()">&#127908; Nachsprechen</button>
     </div>
     <div id="spkRes" style="display:none;padding:.5rem .7rem;border-radius:var(--r-sm);margin-bottom:.5rem;font-size:.82rem;"></div>
@@ -599,7 +609,9 @@ Noch keine eigenen Vokabeln.<br>Füge deine ersten Karten hinzu!
 </div>
 <div id="rInfo" style="font-size:.8rem;color:var(--text3);margin-bottom:.82rem;"></div>
 <button class="btn" id="retryBtn" style="width:100%;margin-bottom:.5rem;background:var(--orange2);border-color:rgba(249,115,22,0.4);color:var(--orange);display:none;" onclick="startRetryMode()">&#128260; Fehler wiederholen (<span id="retryCount">0</span>)</button>
-<button class="btn primary" style="width:100%;padding:.82rem;" onclick="goHome()">Weiter lernen &#8680;</button>
+<div id="rNextInfo" style="display:none;font-size:.78rem;color:var(--cyan);margin-bottom:.45rem;"></div>
+<button class="btn primary" id="rNextBtn" style="width:100%;padding:.82rem;margin-bottom:.5rem;" onclick="goHome()">Weiter lernen &#8680;</button>
+<button class="btn" style="width:100%;background:var(--glass);border-color:var(--border);" onclick="goHome()">&#8962; Zur &#220;bersicht</button>
 </div>
 </div>
 
@@ -3228,14 +3240,21 @@ function checkSectionMastery(){
       if(MASTERY_MSG[id]&&!d.mastered[id]&&sectionMastered(d,id)){
         d.mastered[id]=true;SU(us);
         var msg=MASTERY_MSG[id];
+        // Tester-Feedback: nach dem Abschluss direkt zeigen, wo es im Lernpfad weitergeht
+        var nxtM=null;try{nxtM=getNextStep(d,GS(),Date.now());}catch(e){}
         var ov=document.createElement('div');ov.className='levelup-overlay';
         ov.innerHTML='<div class="levelup-box"><div style="font-size:2.6rem;margin-bottom:.4rem;">'+msg.i+'</div>'+
           '<div style="font-size:.72rem;font-weight:800;color:var(--cyan);letter-spacing:1px;margin-bottom:.3rem;">PFAD ABGESCHLOSSEN</div>'+
           '<div style="font-weight:900;font-size:1.25rem;margin-bottom:.5rem;">'+msg.t+'</div>'+
           '<div style="font-size:.86rem;color:var(--text3);margin-bottom:1.1rem;line-height:1.5;">'+msg.x+'</div>'+
-          '<button class="btn primary" style="width:100%;" id="msOk">&#127881; Weiter so!</button></div>';
+          (nxtM?'<div style="font-size:.76rem;color:var(--cyan);margin-bottom:.45rem;">Als N&auml;chstes: '+nxtM.text+'</div>'+
+            '<button class="btn primary" style="width:100%;margin-bottom:.5rem;" id="msNext">&#9654; Weiter im Lernpfad</button>'+
+            '<button class="btn" style="width:100%;background:var(--glass);border-color:var(--border);" id="msOk">Sp&auml;ter</button>'
+          :'<button class="btn primary" style="width:100%;" id="msOk">&#127881; Weiter so!</button>')+'</div>';
         document.body.appendChild(ov);
         ov.querySelector('#msOk').onclick=function(){ov.remove();};
+        var msN=ov.querySelector('#msNext');
+        if(msN)msN.onclick=(function(nn){return function(){ov.remove();nn.action();};})(nxtM);
         if(typeof showConfetti==='function')showConfetti();
         return true;
       }
@@ -3473,6 +3492,14 @@ function showDash(){
       pfEl.appendChild(nx2);
     }
   }
+  // Tester-Feedback: den nächsten Schritt im Pfad sichtbar markieren („Hier weitermachen")
+  var nextRowId=null;
+  try{
+    var _aD=(d.progress&&d.progress['alphabet'])||0;
+    if(_aD<(C['alphabet']||[]).length)nextRowId='alphabet';
+    else{var _elig=eligibleSections(d);nextRowId=_elig.length?_elig[0]:null;}
+    if(nextRowId){if(nextRowId.indexOf('vocab_top')===0)nextRowId='vocab_freq';else if(nextRowId.indexOf('grammar_')===0)nextRowId='grammar';}
+  }catch(e){}
   const PFAD_GROUPS=[
     {title:'&#128292; Grundlagen',ids:['alphabet']},
     {title:'&#128218; Wortschatz',ids:['vocabulary','vocab_freq','numbers','colors','weekdays']},
@@ -3490,9 +3517,10 @@ function showDash(){
         const st=freqWordsState(d);
         const pctF=st.total?Math.min(100,Math.round(st.done/st.total*100)):0;
         const rowF=document.createElement('div');rowF.className='pfad-row glass';
+        if(nextRowId==='vocab_freq')rowF.classList.add('pfad-next');
         rowF.onclick=function(){startFreqWords();};
         const lblF=st.nextKey?(st.done+' / '+st.total+' gelernt'):(st.total+' / '+st.total+' — komplett! &#127942;');
-        rowF.innerHTML='<div class="pfad-icon">&#128293;</div><div class="pfad-info"><h3>H\xe4ufigste W\xf6rter</h3><p>Die wichtigsten '+st.total+' W\xf6rter — Frequenz-Wortschatz</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctF+'%"></div></div><div class="prog-lbl">'+lblF+'</div></div><div class="pfad-arr">'+(st.done>0?'&#8635;':'&#9654;')+'</div>';
+        rowF.innerHTML='<div class="pfad-icon">&#128293;</div><div class="pfad-info"><h3>H\xe4ufigste W\xf6rter'+(nextRowId==='vocab_freq'?' <span class="pfad-next-badge">&#9654; Hier weitermachen</span>':'')+'</h3><p>Die wichtigsten '+st.total+' W\xf6rter — Frequenz-Wortschatz</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctF+'%"></div></div><div class="prog-lbl">'+lblF+'</div></div><div class="pfad-arr">'+(st.done>0?'&#8635;':'&#9654;')+'</div>';
         pfEl.appendChild(rowF);
         return;
       }
@@ -3504,9 +3532,11 @@ function showDash(){
       const rec=getSecRecommendation(sec.id,d);
       const row=document.createElement('div');row.className='pfad-row glass';
       if(rec)row.style.opacity='.55';
+      const isNext=sec.id===nextRowId&&!rec;
+      if(isNext)row.classList.add('pfad-next');
       row.onclick=sec.id==='custom'?()=>showCustomScreen():sec.id==='grammar'?()=>showGrammarMenu():sec.id==='alphabet'?()=>showAlphabetMenu():sec.id==='vocabulary'?()=>showVocabMenu():sec.id==='numbers'?()=>showNumbersMenu():sec.id==='colors'?()=>showColorsMenu():sec.id==='weekdays'?()=>showWeekdaysMenu():sec.id==='listening'?()=>showListeningMenu():sec.id==='speaking'?()=>showSpeakingMenu():sec.id==='sentences'?()=>showSentencesMenu():()=>startSec(sec.id);
       const nF=data.length?doneN%data.length+1:1,nT=data.length?Math.min(doneN%data.length+cfg.bs,data.length):0;
-      row.innerHTML='<div class="pfad-icon">'+sec.icon+'</div><div class="pfad-info"><h3>'+sec.title+(bdg>0?' <span style="font-size:.63rem;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:.08rem .32rem;border-radius:20px;">'+bdg+' WH</span>':'')+'</h3><p>'+sec.desc+'</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctN+'%"></div></div><div class="prog-lbl">'+(rec?'&#128161; Tipp: erst '+rec:doneN+' / '+data.length+' gelernt'+(doneN>0?' \xb7 N\xe4chste: '+nF+'\u2013'+nT:''))+'</div></div><div class="pfad-arr">'+(doneN>0?'&#8635;':'&#9654;')+'</div>';
+      row.innerHTML='<div class="pfad-icon">'+sec.icon+'</div><div class="pfad-info"><h3>'+sec.title+(isNext?' <span class="pfad-next-badge">&#9654; Hier weitermachen</span>':'')+(bdg>0?' <span style="font-size:.63rem;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:.08rem .32rem;border-radius:20px;">'+bdg+' WH</span>':'')+'</h3><p>'+sec.desc+'</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctN+'%"></div></div><div class="prog-lbl">'+(rec?'&#128161; Tipp: erst '+rec:doneN+' / '+data.length+' gelernt'+(doneN>0?' \xb7 N\xe4chste: '+nF+'\u2013'+nT:''))+'</div></div><div class="pfad-arr">'+(doneN>0?'&#8635;':'&#9654;')+'</div>';
       pfEl.appendChild(row);
     });
   });
@@ -3670,7 +3700,7 @@ function loadCard(){
     const exHtml=alphaExampleHtml(item.m);
     if(exHtml){
       ctxEl.innerHTML=exHtml;
-      ctxEl.querySelectorAll('.ctx-ru').forEach(el=>{el.onclick=()=>spk(el.getAttribute('data-ru'));});
+      wireCtxAudio(ctxEl);
       ctxEl.style.display='block';
     } else ctxEl.style.display='none';
   } else {
@@ -3681,12 +3711,10 @@ function loadCard(){
   if(lehrHtml||(item.ctx&&item.ctx.length)||declHtml){
     let html=lehrHtml+declHtml;
     if(item.ctx&&item.ctx.length){
-      html+='<div style="font-size:.7rem;color:var(--cyan);font-weight:700;margin-bottom:.3rem;">Beispiels\xe4tze (antippen zum Anh\xf6ren):</div>'+item.ctx.map(s=>'<div class="ctx-s"><div class="ctx-ru" data-ru="'+s.ru.replace(/"/g,'&quot;')+'" style="cursor:pointer;">&#128266; '+s.ru+'</div><div class="ctx-de">'+s.de+'</div></div>').join('');
+      html+='<div style="font-size:.7rem;color:var(--cyan);font-weight:700;margin-bottom:.3rem;">Beispiels\xe4tze (antippen zum Anh\xf6ren):</div>'+item.ctx.map(s=>'<div class="ctx-s"><div class="ctx-ru" data-ru="'+s.ru.replace(/"/g,'&quot;')+'" style="cursor:pointer;">&#128266; '+s.ru+' <span class="ctx-slow" title="Langsam anh\xf6ren">&#128034;</span></div><div class="ctx-de">'+s.de+'</div></div>').join('');
     }
     ctxEl.innerHTML=html;
-    ctxEl.querySelectorAll('.ctx-ru').forEach(el=>{el.onclick=()=>spk(el.getAttribute('data-ru'));});
-    // Konjugations-/Tabellenzeilen mit Audio-Phrase antippbar machen
-    ctxEl.querySelectorAll('.gram-row').forEach(el=>{el.onclick=()=>spk(el.getAttribute('data-ru'));});
+    wireCtxAudio(ctxEl);
     ctxEl.style.display='block';
   } else ctxEl.style.display='none';
   }
@@ -3695,7 +3723,8 @@ function loadCard(){
   document.getElementById('prevBtn').disabled=ci===0;
   document.getElementById('nextBtn').innerHTML=ci===cb.length-1?'Quiz starten &#127919;':'Weiter &#8594;';
   const gi=document.getElementById('gapInline');if(gi)gi.style.display='none';
-  const btnAr=document.getElementById('btnAnhoeren');if(btnAr)btnAr.setAttribute('onclick','spk(cb[ci].m)');
+  const btnAr=document.getElementById('btnAnhoeren');if(btnAr)btnAr.setAttribute('onclick',"spk(cb[ci].m,null,document.getElementById('cMain'))");
+  const btnLs=document.getElementById('btnLangsam');if(btnLs)btnLs.setAttribute('onclick',"spkSlow(cb[ci].m,document.getElementById('cMain'))");
   const nbr=document.getElementById('nextBtn');if(nbr){nbr.disabled=false;nbr.style.opacity='';nbr.style.cursor='';}
   setupListenFirst(item);
 }
@@ -3716,10 +3745,10 @@ function setupListenFirst(item){
   if(ex)ex.style.visibility='hidden';
   if(tr)tr.style.visibility='';
   if(micArea){
-    var slow=document.createElement('button');slow.id='llSlowBtn';slow.className='btn sm';slow.innerHTML='🐢 Langsam';slow.onclick=function(){spkSlow(item.m);};
+    // 🐢 Langsam gibt es jetzt als festen Karten-Button (btnLangsam) — hier nur noch Auflösen
     var rev=document.createElement('button');rev.id='llRevealBtn';rev.className='btn sm';rev.innerHTML='👁 Text zeigen';
     rev.onclick=function(){if(main){main.textContent=item.m;}if(sub)sub.style.visibility='';if(ex)ex.style.visibility='';rev.style.display='none';};
-    micArea.appendChild(slow);micArea.appendChild(rev);
+    micArea.appendChild(rev);
   }
   setTimeout(function(){spk(item.m);},450);
 }
@@ -3751,6 +3780,8 @@ function loadGapCard(item){
   // Beim Lückensatz: Anhören spricht den ganzen Satz
   const btnA=document.getElementById('btnAnhoeren');
   if(btnA){btnA.setAttribute('onclick','spk(cb[ci].full)');}
+  const btnL2=document.getElementById('btnLangsam');
+  if(btnL2){btnL2.setAttribute('onclick','spkSlow(cb[ci].full)');}
   document.getElementById('ctxSents').style.display='none';
   card.style.transform='scale(0.97)';
   setTimeout(()=>{card.style.transform='scale(1)';},120);
@@ -3916,25 +3947,38 @@ let _curAudio=null;
 // FNV-1a 32-Bit über UTF-8-Bytes — identisch zu fnv1a() in tools/generate_audio.py
 function audioKey(t){let h=0x811c9dc5;const b=new TextEncoder().encode(t);for(let i=0;i<b.length;i++){h^=b[i];h=Math.imul(h,0x01000193)>>>0;}return h.toString(16).padStart(8,'0');}
 function _lv(){try{const vs=speechSynthesis.getVoices();if(vs&&vs.length>0)_voices=vs;}catch(e){}}
-function spk(txt,rate){
+function spk(txt,rate,hlEl){
   if(!txt||typeof txt!=='string'||!txt.trim())return;
   const t=txt.trim();
   try{if(_curAudio){_curAudio.pause();_curAudio=null;}}catch(e){}
   try{if(window.speechSynthesis)speechSynthesis.cancel();}catch(e){}
+  _hlOff();
   const a=new Audio(AUDIO_BASE+audioKey(t)+'.mp3');
   if(rate)a.playbackRate=rate;
   _curAudio=a;
+  if(hlEl)_hlOn(hlEl);
+  a.onended=function(){if(_curAudio===a)_curAudio=null;_hlOff();};
   a.onerror=function(){if(_curAudio===a){_curAudio=null;_spkSys(t,rate);}};
   a.play().catch(function(){if(_curAudio===a){_curAudio=null;_spkSys(t,rate);}});
 }
 // Langsam abspielen (Hör-Training)
-function spkSlow(txt){spk(txt,0.6);}
+function spkSlow(txt,hlEl){spk(txt,0.6,hlEl);}
+// „Helle Stelle": gesprochener Text leuchtet, solange das Audio läuft (Tester-Feedback)
+var _hlEl=null;
+function _hlOn(el){_hlOff();try{el.classList.add('spk-hl');_hlEl=el;}catch(e){}}
+function _hlOff(){try{if(_hlEl){_hlEl.classList.remove('spk-hl');_hlEl=null;}}catch(e){}}
+// Antippbare Texte (Beispielwörter/-sätze, Tabellenzeilen) verkabeln: Tipp = 🔊 mit Highlight, 🐢 = langsam
+function wireCtxAudio(ctxEl){
+  ctxEl.querySelectorAll('.ctx-ru').forEach(function(el){el.onclick=function(){spk(el.getAttribute('data-ru'),null,el);};});
+  ctxEl.querySelectorAll('.gram-row').forEach(function(el){el.onclick=function(){spk(el.getAttribute('data-ru'),null,el);};});
+  ctxEl.querySelectorAll('.ctx-slow').forEach(function(sl){sl.onclick=function(ev){ev.stopPropagation();var p=sl.closest('.ctx-ru');if(p)spkSlow(p.getAttribute('data-ru'),p);};});
+}
 function _spkSys(t,rate){
   try{
-    if(!window.speechSynthesis)return;
+    if(!window.speechSynthesis){_hlOff();return;}
     if(speechSynthesis.paused){try{speechSynthesis.resume();}catch(e){}}
     speechSynthesis.cancel();
-    function _do(){try{const u=new SpeechSynthesisUtterance(t);u.lang='ru-RU';u.rate=rate?Math.max(0.4,0.8*rate):0.8;u.pitch=1;u.volume=1;const vs=speechSynthesis.getVoices();if(vs&&vs.length>0)_voices=vs;const rv=_voices.find(v=>v.lang==='ru-RU')||_voices.find(v=>v.lang.startsWith('ru'));if(rv)u.voice=rv;speechSynthesis.speak(u);}catch(e){}}
+    function _do(){try{const u=new SpeechSynthesisUtterance(t);u.lang='ru-RU';u.rate=rate?Math.max(0.4,0.8*rate):0.8;u.pitch=1;u.volume=1;u.onend=u.onerror=function(){_hlOff();};const vs=speechSynthesis.getVoices();if(vs&&vs.length>0)_voices=vs;const rv=_voices.find(v=>v.lang==='ru-RU')||_voices.find(v=>v.lang.startsWith('ru'));if(rv)u.voice=rv;speechSynthesis.speak(u);}catch(e){_hlOff();}}
     const vs=speechSynthesis.getVoices();
     if(vs&&vs.length>0){_voices=vs;_do();}else setTimeout(()=>{_lv();_do();},300);
   }catch(e){}
@@ -4024,7 +4068,7 @@ function alphaExampleHtml(letterM){
   if(idx<0){var low=letterM.toLowerCase();idx=ex.w.indexOf(low);if(idx>=0)lit=low;}
   if(idx>=0)shown=ex.w.slice(0,idx)+'<span style="color:var(--cyan);">'+lit+'</span>'+ex.w.slice(idx+lit.length);
   return '<div style="font-size:.7rem;color:var(--cyan);font-weight:700;margin-bottom:.3rem;">Beispielwort (antippen zum Anhören):</div>'+
-    '<div class="ctx-s"><div class="ctx-ru" data-ru="'+safe+'" style="cursor:pointer;font-size:1.05rem;">&#128266; '+shown+'</div><div class="ctx-de">'+ex.d+'</div></div>';
+    '<div class="ctx-s"><div class="ctx-ru" data-ru="'+safe+'" style="cursor:pointer;font-size:1.05rem;">&#128266; '+shown+' <span class="ctx-slow" title="Langsam anh&#246;ren">&#128034;</span></div><div class="ctx-de">'+ex.d+'</div></div>';
 }
 let _aqReview=false;
 
@@ -4294,12 +4338,14 @@ function showAQLearnCard(letter){
   var exHtml=alphaExampleHtml(letter.m);
   if(exHtml){
     ctxEl.innerHTML=exHtml;
-    ctxEl.querySelectorAll('.ctx-ru').forEach(function(el){el.onclick=function(){spk(el.getAttribute('data-ru'));};});
+    wireCtxAudio(ctxEl);
     ctxEl.style.display='block';
   } else {ctxEl.style.display='none';}
   // Anhören
   var btnA=document.getElementById('btnAnhoeren');
-  if(btnA)btnA.setAttribute('onclick','spk("'+letter.m+'")');
+  if(btnA)btnA.setAttribute('onclick','spk("'+letter.m+'",null,document.getElementById(\'cMain\'))');
+  var btnL3=document.getElementById('btnLangsam');
+  if(btnL3)btnL3.setAttribute('onclick','spkSlow("'+letter.m+'",document.getElementById(\'cMain\'))');
   var gi=document.getElementById('gapInline');if(gi)gi.style.display='none';
   // Weiter-Button → Lückensätze
   aqGapIdx=0;
@@ -4478,17 +4524,24 @@ function showAlphabetFinish(){
       });
       inner+='</div></div>';
     }
-    inner+='<button class="btn" style="width:100%;margin-bottom:.5rem;background:var(--glass);border-color:var(--border);" id="aqHomeBtn">&#127968; Weiter zum Lernpfad</button>';
+    inner+='<button class="btn" style="width:100%;margin-bottom:.5rem;background:var(--glass);border-color:var(--border);" id="aqHomeBtn">&#127968; Zur &#220;bersicht</button>';
+    var nxtA=null;
     if(hasMore){
       inner+='<button class="btn primary" style="width:100%;" id="aqNextBtn">&#128214; Neue Buchstaben lernen</button>';
     } else {
       inner+='<div style="color:#22c55e;font-size:.82rem;margin:.5rem 0 .8rem;">&#127942; Alle Buchstaben dieses Levels geschafft!</div>';
+      // Tester-Feedback: nicht in der Sackgasse stehen lassen — direkt den nächsten Pfad-Schritt anbieten
+      try{nxtA=getNextStep(us[cu],GS(),Date.now());}catch(e){}
+      if(nxtA){
+        inner+='<div style="font-size:.76rem;color:var(--cyan);margin-bottom:.45rem;">Als N&auml;chstes: '+nxtA.text+'</div>';
+        inner+='<button class="btn primary" style="width:100%;margin-bottom:.5rem;" id="aqPathBtn">&#9654; Weiter im Lernpfad</button>';
+      }
       inner+='<button class="btn" style="width:100%;border-color:var(--cyan);color:var(--cyan);" id="aqRepeatBtn">&#128260; Buchstaben wiederholen</button>';
     }
     inner+='</div>';
     ov.innerHTML=inner;
     document.body.appendChild(ov);
-    ov.querySelectorAll('.read-word').forEach(function(b){b.onclick=function(){spk(this.getAttribute('data-w'));};});
+    ov.querySelectorAll('.read-word').forEach(function(b){b.onclick=function(){spk(this.getAttribute('data-w'),null,this);};});
     var homeBtn=document.getElementById('aqHomeBtn');
     if(homeBtn)homeBtn.onclick=function(){ov.remove();showDash();};
     var nextBtn=document.getElementById('aqNextBtn');
@@ -4498,6 +4551,8 @@ function showAlphabetFinish(){
       var us=GU();us[cu].progress['alphabet']=0;SU(us);
       ov.remove();startSec('alphabet');
     };
+    var pathBtn=document.getElementById('aqPathBtn');
+    if(pathBtn)pathBtn.onclick=function(){ov.remove();nxtA.action();};
   }catch(e){console.error('showAlphabetFinish:',e);showDash();}
 }
 // ===== ENDE ALPHABET QUIZ =====
@@ -4528,7 +4583,7 @@ function startDialogMode(){
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem;"><span style="font-size:.75rem;color:var(--text3);">&#128172; Dialog &middot; '+(di+1)+'/'+items.length+'</span><button id="dgExit" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.05rem;font-family:inherit;padding:0 .2rem;">&#10005;</button></div>'+
       '<div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r-sm);padding:.8rem;margin-bottom:.7rem;text-align:left;">'+
         '<div style="font-size:.65rem;color:var(--text3);margin-bottom:.2rem;">&#129302; fragt dich:</div>'+
-        '<div style="font-size:1.1rem;font-weight:800;color:var(--cyan);">'+d.ai+'</div>'+
+        '<div id="dgAi" style="font-size:1.1rem;font-weight:800;color:var(--cyan);">'+d.ai+'</div>'+
         '<div style="font-size:.78rem;color:var(--text3);font-style:italic;">'+(d.aiDe||'')+'</div>'+
         '<div style="margin-top:.4rem;"><button class="btn sm" id="dgPlay">&#128266; Anhören</button> <button class="btn sm" id="dgSlow">&#128034; Langsam</button></div>'+
       '</div>'+
@@ -4539,15 +4594,15 @@ function startDialogMode(){
       '<div id="dgNextWrap" style="display:none;margin-top:.4rem;"><button class="btn primary" style="width:100%;" id="dgNext">Weiter &#8594;</button></div>'+
       '</div>';
     ov.querySelector('#dgExit').onclick=function(){ov.remove();};
-    ov.querySelector('#dgPlay').onclick=function(){spk(d.ai);};
-    ov.querySelector('#dgSlow').onclick=function(){spkSlow(d.ai);};
-    setTimeout(function(){spk(d.ai);},400);
+    ov.querySelector('#dgPlay').onclick=function(){spk(d.ai,null,ov.querySelector('#dgAi'));};
+    ov.querySelector('#dgSlow').onclick=function(){spkSlow(d.ai,ov.querySelector('#dgAi'));};
+    setTimeout(function(){spk(d.ai,null,ov.querySelector('#dgAi'));},400);
     function reveal(spoken,ok){
       var res=ov.querySelector('#dgRes');
       if(ok){score++;res.style.color='#22c55e';res.innerHTML='&#10003; Super! &mdash; '+d.h;}
       else if(spoken){res.style.color='#f97316';res.innerHTML='Du sagtest: „'+spoken+'"<br><span style="color:var(--cyan);">Muster: '+d.h+'</span>';}
       else{res.style.color='var(--text3)';res.innerHTML='Musterantwort: <span style="color:var(--cyan);font-weight:700;">'+d.h+'</span>';}
-      spk(d.h);
+      spk(d.h,null,res);
       ov.querySelector('#dgNextWrap').style.display='block';
     }
     var revBtn=ov.querySelector('#dgReveal');if(revBtn)revBtn.onclick=function(){reveal(null,false);};
@@ -4619,11 +4674,11 @@ function loadSpkCard(){
   document.getElementById('spkConfirm').style.display='none';
   var btn=document.getElementById('spkMicBtn');
   if(btn){btn.innerHTML='&#127908; Nachsprechen';btn.classList.remove('listening');btn.disabled=false;}
-  setTimeout(function(){spk(item.m);},400);
+  setTimeout(function(){spk(item.m,null,document.getElementById('spkMain'));},400);
 }
 
 function spkPlayWord(){
-  if(spkIdx<cb.length)spk(cb[spkIdx].m);
+  if(spkIdx<cb.length)spk(cb[spkIdx].m,null,document.getElementById('spkMain'));
 }
 
 function startSpkMic(){
@@ -5580,6 +5635,15 @@ function finishQ(){
   document.getElementById('rInfo').textContent=dl>0?'Gesamt: '+td+' Karten \xb7 '+dl+' verf\xfcgbar \xb7 N\xe4chste: '+(td%dl+1)+'\u2013'+Math.min(td%dl+DC[cd].bs,dl):'';
   const errs=getErrs();document.getElementById('retryCount').textContent=errs.length;document.getElementById('retryBtn').style.display=errs.length>0?'block':'none';
   if(acc>=90){var _uq=GU();if(_uq[cu])_uq[cu]._perfectQuiz=true;SU(_uq);}
+  // Tester-Feedback: nach dem Block direkt den nächsten Lernpfad-Schritt anbieten
+  try{
+    var nxt=getNextStep(us[cu],GS(),Date.now());
+    var nb=document.getElementById('rNextBtn'),ni=document.getElementById('rNextInfo');
+    if(nb&&ni){
+      if(nxt){ni.style.display='block';ni.innerHTML='Als N&auml;chstes: '+nxt.text;nb.innerHTML='&#9654; Weiter im Lernpfad';nb.onclick=function(){nxt.action();};}
+      else{ni.style.display='none';nb.innerHTML='Weiter lernen &#8680;';nb.onclick=function(){goHome();};}
+    }
+  }catch(e){}
   showSc('scResult');if(acc>=90)showConfetti();
   setTimeout(checkAchievements,500);
   }catch(e){console.error('finishQ:',e);showDash();}
@@ -5698,7 +5762,7 @@ function readStory(){
   const ruText=story.text.map(p=>p.ru).join('');
   btn.innerHTML='&#128266; Spielt...';
   btn.style.opacity='.7';
-  spk(ruText);
+  spk(ruText,null,document.querySelector('#scStory .story-text'));
   // Button nach ~5 Sekunden zurücksetzen
   setTimeout(()=>{
     if(btn){btn.innerHTML='&#128266; Vorlesen';btn.style.opacity='1';}
