@@ -246,7 +246,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 </style>
 </head>
 <body>
-<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 16</div>
+<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 17</div>
 <div class="flash" id="flash"></div>
 <div class="s-tooltip" id="tooltip"></div>
 <svg width="0" height="0" style="position:absolute">
@@ -466,6 +466,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="fb" id="fb"></div>
 <div class="qbtns">
 <button id="bHint" onclick="showHint()">&#128161; Hilfe</button>
+<button id="bLetter" onclick="letterHelpQ()" title="Verr&#228;t den n&#228;chsten Buchstaben der L&#246;sung &mdash; halbe Punkte">&#128292; Buchstabe</button>
 <button id="bSol" onclick="showSol()">&#10003; L&#246;sung</button>
 <button onclick="skipQ()">&#9197; Weiter</button>
 <button id="bCheck" onclick="checkAns()">Pr&#252;fen &#10003;</button>
@@ -490,6 +491,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="fb" id="lFb"></div>
 <div class="qbtns">
 <button onclick="showLHint()">&#128161; Hilfe</button>
+<button onclick="nextLetterHelp('lIn',cb[qi].m)" title="Verr&#228;t den n&#228;chsten Buchstaben &mdash; halbe Punkte">&#128292; Buchstabe</button>
 <button onclick="showLSol()">&#10003; L&#246;sung</button>
 <button onclick="skipLQ()">&#9197; Weiter</button>
 <button id="lCheck" onclick="checkListen()">Pr&#252;fen &#10003;</button>
@@ -518,6 +520,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="fb" id="retryFb"></div>
 <div class="qbtns">
 <button onclick="showRetryHint()">&#128161; Hilfe</button>
+<button onclick="nextLetterHelp('retryIn',(retryCb[retryQi].t||retryCb[retryQi].m))" title="Verr&#228;t den n&#228;chsten Buchstaben">&#128292; Buchstabe</button>
 <button onclick="showRetrySol()">&#10003; L&#246;sung</button>
 <button onclick="skipRetry()">&#9197; Weiter</button>
 <button id="retryCheck" onclick="checkRetry()">Pr&#252;fen &#10003;</button>
@@ -680,9 +683,10 @@ Noch keine eigenen Vokabeln.<br>Füge deine ersten Karten hinzu!
     <div style="position:relative;margin-bottom:.7rem;">
       <input id="diktatInput" class="qi" style="width:100%;font-size:1rem;padding:.7rem .8rem;padding-right:2.5rem;" 
         placeholder="Русский текст..." oninput="diktatInputChange()" onkeydown="if(event.key==='Enter')checkDiktat()">
-      <button onclick="bldKBDiktat()" style="position:absolute;right:.4rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--cyan);">&#1056;</button>
+      <button onclick="bldKBDiktat()" title="Russische Tastatur ein-/ausblenden" style="position:absolute;right:.4rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--cyan);">&#9000;&#65039;</button>
     </div>
     <div id="diktatKyr" style="display:none;"></div>
+    <button class="btn ghost sm" style="width:100%;margin-bottom:.5rem;" onclick="nextLetterHelp('diktatInput',diktatCB[diktatIdx].m)" title="Verr&#228;t den n&#228;chsten Buchstaben &mdash; halbe XP">&#128292; N&#228;chster Buchstabe</button>
     <div id="diktatFeedback" style="min-height:1.2rem;font-size:.83rem;margin-bottom:.5rem;text-align:center;"></div>
     <button class="btn primary" style="width:100%;" onclick="checkDiktat()">&#10003; Prüfen</button>
     <div id="diktatWeiter" style="display:none;margin-top:.5rem;">
@@ -1907,7 +1911,12 @@ function showStreakCalendar(){
   ov.querySelector('#scPrev').onclick=function(){_streakCalMonth--;showStreakCalendar();};
   var nx=ov.querySelector('#scNext');if(nx)nx.onclick=function(){if(_streakCalMonth<0){_streakCalMonth++;showStreakCalendar();}};
 }
-function getErrs(){try{return JSON.parse(_lg('ru_errs_'+cu)||'[]');}catch(e){return[];}}
+function getErrs(){try{
+  var e=JSON.parse(_lg('ru_errs_'+cu)||'[]');
+  // Alt-Einträge aus Grammatik-Sektionen aussortieren: deren Konzept-Antworten passen nicht
+  // zur Wiederholungs-Prüfung (Grammatik läuft seit 16.06. über den Trainer, nicht übers Quiz)
+  return e.filter(function(x){return !(x.sec&&String(x.sec).indexOf('grammar')===0);});
+}catch(e){return[];}}
 function saveErrs(e){_ls('ru_errs_'+cu,JSON.stringify(e));}
 
 
@@ -1928,7 +1937,7 @@ const VOCAB_TOPICS=[
 function _enrichOptions(list,pool){
   list.forEach(function(w){
     if(!w.o){
-      var others=pool.filter(function(d){return d.t!==w.t&&d.m!==w.m;}).sort(function(){return Math.random()-.5;}).slice(0,3);
+      var others=shuffle(pool.filter(function(d){return d.t!==w.t&&d.m!==w.m;})).slice(0,3);
       w.o=[w.t].concat(others.map(function(d){return d.t;}));
       w.r=[w.m].concat(others.map(function(d){return d.m;}));
     }
@@ -2030,9 +2039,9 @@ function startPairsGame(){
       ov.querySelector('#pairsDone').onclick=function(){ov.remove();showDash();};
       return;
     }
-    var pairs=pool.slice().sort(function(){return Math.random()-.5;}).slice(0,5);
-    var left=pairs.slice().sort(function(){return Math.random()-.5;});
-    var right=pairs.slice().sort(function(){return Math.random()-.5;});
+    var pairs=shuffle(pool).slice(0,5);
+    var left=shuffle(pairs);
+    var right=shuffle(pairs);
     var btnCss='display:block;width:100%;margin-bottom:.45rem;padding:.6rem .4rem;font-size:.88rem;font-weight:700;background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;color:var(--text);font-family:inherit;';
     var html='<div class="levelup-box" style="max-width:360px;width:94%;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem;"><span style="font-size:.75rem;color:var(--text3);">&#127183; Wort-Paare &middot; Runde '+(runde+1)+'/'+TOTALR+'</span><button id="pairsExit" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.05rem;font-family:inherit;padding:0 .2rem;">&#10005;</button></div>';
     html+='<div style="display:flex;gap:.6rem;"><div style="flex:1;">';
@@ -2163,7 +2172,7 @@ function startNumberTrainer(){
         else c=_randNum(max);
         if(c>=1&&c<=max&&opts.indexOf(c)<0)opts.push(c);
       }
-      opts.sort(function(){return Math.random()-.5;});
+      opts=shuffle(opts);
       var btns=opts.map(function(o){return '<button class="nt-opt" data-n="'+o+'" style="display:block;width:100%;margin-bottom:.45rem;padding:.65rem;font-size:.95rem;font-weight:700;background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;color:var(--text);font-family:inherit;">'+ruNumber(o)+'</button>';}).join('');
       ov.innerHTML='<div class="levelup-box" style="max-width:340px;width:92%;">'+head+
         '<div style="font-size:.95rem;font-weight:700;margin-bottom:.4rem;">Wie hei&szlig;t diese Zahl auf Russisch?</div>'+
@@ -2192,7 +2201,7 @@ function startNumberDrill(){
   var qs=[];
   for(var i=0;i<10;i++){
     var pair=NUM_CONFUSION[Math.floor(Math.random()*NUM_CONFUSION.length)];
-    qs.push({pair:pair.slice().sort(function(){return Math.random()-.5;}),target:pair[Math.floor(Math.random()*2)]});
+    qs.push({pair:shuffle(pair),target:pair[Math.floor(Math.random()*2)]});
   }
   var qi6=0,score=0;
   var ov=document.createElement('div');ov.className='levelup-overlay';document.body.appendChild(ov);
@@ -2237,8 +2246,8 @@ function startColorTrainer(){
   var qs=[];
   for(var i=0;i<10;i++){
     var target=colors[Math.floor(Math.random()*colors.length)];
-    var others=colors.filter(function(c){return c.m!==target.m;}).sort(function(){return Math.random()-.5;}).slice(0,3);
-    qs.push({t:target,opts:[target].concat(others).sort(function(){return Math.random()-.5;}),typ:Math.floor(Math.random()*2)});
+    var others=shuffle(colors.filter(function(c){return c.m!==target.m;})).slice(0,3);
+    qs.push({t:target,opts:shuffle([target].concat(others)),typ:Math.floor(Math.random()*2)});
   }
   var qi7=0,score=0;
   var ov=document.createElement('div');ov.className='levelup-overlay';document.body.appendChild(ov);
@@ -2298,8 +2307,8 @@ function startListenComprehension(){
   var qs=[];
   for(var i=0;i<10;i++){
     var target=pool[Math.floor(Math.random()*pool.length)];
-    var others=pool.filter(function(x){return x.t!==target.t;}).sort(function(){return Math.random()-.5;}).slice(0,3);
-    qs.push({t:target,opts:[target].concat(others).sort(function(){return Math.random()-.5;})});
+    var others=shuffle(pool.filter(function(x){return x.t!==target.t;})).slice(0,3);
+    qs.push({t:target,opts:shuffle([target].concat(others))});
   }
   var qi=0,score=0;
   var ov=document.createElement('div');ov.className='levelup-overlay';document.body.appendChild(ov);
@@ -2389,8 +2398,8 @@ function startOrderTrainer(){
     var idx=Math.floor(Math.random()*seq.length);
     var ansIdx=after?(idx+1)%seq.length:(idx-1+seq.length)%seq.length;
     var answer=seq[ansIdx];
-    var others=seq.filter(function(x){return x!==answer;}).sort(function(){return Math.random()-.5;}).slice(0,3);
-    qs.push({base:seq[idx],after:after,answer:answer,unit:useMonths?'Monat':'Tag',opts:[answer].concat(others).sort(function(){return Math.random()-.5;})});
+    var others=shuffle(seq.filter(function(x){return x!==answer;})).slice(0,3);
+    qs.push({base:seq[idx],after:after,answer:answer,unit:useMonths?'Monat':'Tag',opts:shuffle([answer].concat(others))});
   }
   var qi8=0,score=0;
   var ov=document.createElement('div');ov.className='levelup-overlay';document.body.appendChild(ov);
@@ -2441,8 +2450,8 @@ function startTodayQuiz(){
       return;
     }
     var q=qs[qi9];
-    var others=q.pool.filter(function(x){return x!==q.answer;}).sort(function(){return Math.random()-.5;}).slice(0,3);
-    var opts=[q.answer].concat(others).sort(function(){return Math.random()-.5;});
+    var others=shuffle(q.pool.filter(function(x){return x!==q.answer;})).slice(0,3);
+    var opts=shuffle([q.answer].concat(others));
     var btns=opts.map(function(o){return '<button class="tq-opt" data-m="'+o+'" style="display:block;width:100%;margin-bottom:.45rem;padding:.65rem;font-size:1rem;font-weight:700;background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;color:var(--text);font-family:inherit;">'+o+'</button>';}).join('');
     ov.innerHTML='<div class="levelup-box" style="max-width:340px;width:92%;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;"><span style="font-size:.75rem;color:var(--text3);">&#128197; Heute &middot; '+(qi9+1)+'/'+qs.length+'</span><button id="tqExit" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.05rem;font-family:inherit;padding:0 .2rem;">&#10005;</button></div><div style="font-size:1.05rem;font-weight:700;margin-bottom:.9rem;">'+q.q+'</div>'+btns+'<div id="tqFb" style="min-height:1.3rem;font-size:.85rem;font-weight:600;text-align:center;margin-top:.3rem;"></div></div>';
     ov.querySelector('#tqExit').onclick=function(){ov.remove();};
@@ -2671,7 +2680,29 @@ const GRAM_LEHR={
 "Прошедшее время":{t:'Vergangenheit: Stamm + -л / -ла / -ло / -ли',col:'#b48cff',rows:[['он (m)','читал','er las','он читал'],['она (f)','читала','sie las','она читала'],['оно (n)','читало','es las','оно читало'],['они (pl)','читали','sie lasen','они читали']]},
 "Личные местоимения":{t:'Personalpronomen',col:'#5aa9ff',rows:[['я','ich'],['ты','du'],['он / она / оно','er / sie / es'],['мы','wir'],['вы','ihr / Sie'],['они','sie (Pl.)']]},
 "Притяжательные местоимения":{t:'mein — nach Geschlecht des Nomens',col:'#ff79ad',rows:[['мой (m)','мой стол'],['моя (f)','моя книга'],['моё (n)','моё окно'],['мои (pl)','мои друзья']]},
-"Склонение личных местоимений":{t:'я (ich) in allen Fällen',col:'#5aa9ff',rows:[['Nominativ','я'],['Gen / Akk','меня'],['Dativ','мне'],['Instrumental','мной'],['Präpositional','(обо) мне']]}
+"Склонение личных местоимений":{t:'я (ich) in allen Fällen',col:'#5aa9ff',rows:[['Nominativ','я'],['Gen / Akk','меня'],['Dativ','мне'],['Instrumental','мной'],['Präpositional','(обо) мне']]},
+// Verben (Rest)
+"Отрицание: НЕ + глагол":{t:'не + Verb — Verneinung',col:'#ff6b6b',rows:[['я','не знаю','ich weiß nicht','я не знаю'],['он','не работает','er arbeitet nicht','он не работает'],['мы','не понимаем','wir verstehen nicht','мы не понимаем'],['они','не хотят','sie wollen nicht','они не хотят']]},
+"НЕТ + родительный падеж":{t:'нет + Genitiv — es gibt kein …',col:'#ff6b6b',rows:[['деньги','нет денег','kein Geld','у меня нет денег'],['время','нет времени','keine Zeit','нет времени'],['машина','нет машины','kein Auto','у него нет машины'],['брат','нет брата','kein Bruder','у меня нет брата']]},
+"Будущее время":{t:'Zukunft: буду + Infinitiv',col:'#b48cff',rows:[['я','буду читать','ich werde lesen','я буду читать'],['ты','будешь читать','du wirst lesen','ты будешь читать'],['он / она','будет читать','er / sie wird lesen','он будет читать'],['мы','будем читать','wir werden lesen','мы будем читать'],['вы','будете читать','ihr werdet / Sie werden lesen','вы будете читать'],['они','будут читать','sie werden lesen','они будут читать']]},
+"Императив":{t:'Imperativ: du-Form / höflich mit -те',col:'#ffb454',rows:[['читать','читай / читайте','lies! / lesen Sie!','читайте'],['говорить','говори / говорите','sprich! / sprechen Sie!','говорите'],['идти','иди / идите','geh! / gehen Sie!','идите'],['сказать','скажи / скажите','sag! / sagen Sie!','скажите'],['извинить','извини / извините','entschuldige! / entschuldigen Sie!','извините']]},
+"Модальные слова: можно, нужно, надо":{t:'Modalwörter + Infinitiv (Person im Dativ)',col:'#ffb454',rows:[['dürfen','Можно войти?','Darf man reinkommen?','можно войти?'],['verboten','Здесь нельзя курить.','Hier darf man nicht rauchen.','здесь нельзя курить'],['müssen','Мне надо идти.','Ich muss gehen.','мне надо идти'],['brauchen','Мне нужно время.','Ich brauche Zeit.','мне нужно время'],['müssen (m/f)','Я должен / должна','ich muss (Mann / Frau)','я должен работать']]},
+"НЕЛЬЗЯ — запрет и невозможность":{t:'нельзя + НСВ = verboten · + СВ = unmöglich',col:'#ff6b6b',rows:[['Verbot (НСВ)','нельзя курить','man darf nicht rauchen','здесь нельзя курить'],['Verbot (НСВ)','нельзя парковаться','Parken verboten','здесь нельзя парковаться'],['unmöglich (СВ)','нельзя открыть','lässt sich nicht öffnen','дверь нельзя открыть'],['unmöglich (СВ)','нельзя понять','nicht zu verstehen','это нельзя понять']]},
+"Глагол ИДТИ / ХОДИТЬ":{t:'идти (gerade jetzt) · ходить (regelmäßig)',col:'#54d98c',rows:[['я','иду · хожу','ich gehe','я иду'],['ты','идёшь · ходишь','du gehst','ты идёшь'],['он / она','идёт · ходит','er / sie geht','он идёт'],['мы','идём · ходим','wir gehen','мы идём'],['вы','идёте · ходите','ihr geht / Sie gehen','вы идёте'],['они','идут · ходят','sie gehen','они идут']]},
+"Глагол ЕХАТЬ / ЕЗДИТЬ":{t:'ехать (gerade jetzt) · ездить (regelmäßig)',col:'#54d98c',rows:[['я','еду · езжу','ich fahre','я еду'],['ты','едешь · ездишь','du fährst','ты едешь'],['он / она','едет · ездит','er / sie fährt','он едет'],['мы','едем · ездим','wir fahren','мы едем'],['вы','едете · ездите','ihr fahrt / Sie fahren','вы едете'],['они','едут · ездят','sie fahren','они едут']]},
+"Виды глагола: НСВ и СВ":{t:'Aspekt-Paare: НСВ (Prozess) → СВ (Ergebnis)',col:'#b48cff',rows:[['machen','делать → сделать','СВ: fertig gemacht','я сделал работу'],['lesen','читать → прочитать','СВ: zu Ende gelesen','я прочитал книгу'],['schreiben','писать → написать','СВ: fertig geschrieben','я написал письмо'],['kaufen','покупать → купить','СВ: gekauft (Ergebnis)','я купил хлеб'],['sagen','говорить → сказать','СВ: gesagt (einmal)','он сказал правду']]},
+"Возвратные глаголы на -СЯ/-СЬ":{t:'учиться (lernen) — reflexiv: -ся / -сь',col:'#54d98c',rows:[['я','учусь','ich lerne','я учусь'],['ты','учишься','du lernst','ты учишься'],['он / она','учится','er / sie lernt','он учится'],['мы','учимся','wir lernen','мы учимся'],['вы','учитесь','ihr lernt / Sie lernen','вы учитесь'],['они','учатся','sie lernen','они учатся']]},
+// Pronomen (Rest)
+"его / её / их — неизменяемые":{t:'sein / ihr — immer unverändert',col:'#ff79ad',rows:[['его (sein)','его дом · его книга','sein Haus · sein Buch','его дом'],['её (ihr)','её дом · её книга','ihr Haus · ihr Buch','её книга'],['их (ihr, Pl.)','их дом · их книги','ihr Haus · ihre Bücher','их дом']]},
+"Указательные местоимения":{t:'этот (nah) · тот (fern)',col:'#ff79ad',rows:[['m','этот · тот','dieser · jener','этот стол'],['f','эта · та','diese · jene','эта книга'],['n','это · то','dieses · jenes','это окно'],['Pl.','эти · те','diese · jene','эти люди']]},
+"Вопросительные местоимения":{t:'Fragepronomen',col:'#5aa9ff',rows:[['wer','кто','Кто это?','кто это?'],['was','что','Что это?','что это?'],['welcher','какой','Какой фильм?','какой фильм?'],['wessen','чей','Чей это дом?','чей это дом?'],['wie viel','сколько','Сколько стоит?','сколько стоит?']]},
+"Неопределённые местоимения":{t:'-то (bestimmt, unbekannt) · -нибудь (egal wer/was)',col:'#ffb454',rows:[['jemand','кто-то','Кто-то звонил.','кто-то звонил'],['irgendjemand','кто-нибудь','Кто-нибудь дома?','кто-нибудь дома?'],['etwas','что-то','Он что-то сказал.','он что-то сказал'],['irgendetwas','что-нибудь','Хочешь что-нибудь?','хочешь что-нибудь?'],['irgendwo','где-то','Ключи где-то здесь.','ключи где-то здесь']]},
+"Отрицательные местоимения":{t:'ни- + doppelte Verneinung (не beim Verb!)',col:'#ff6b6b',rows:[['niemand','никто','Никто не знает.','никто не знает'],['nichts','ничего','Я ничего не вижу.','я ничего не вижу'],['nirgends','нигде','Его нигде нет.','его нигде нет'],['nie','никогда','Я никогда не курю.','я никогда не курю']]},
+"Местоимение ВЕСЬ / ВСЯ / ВСЁ / ВСЕ":{t:'весь — ganz / alle (nach Geschlecht)',col:'#ff79ad',rows:[['весь (m)','весь день','den ganzen Tag','весь день'],['вся (f)','вся неделя','die ganze Woche','вся неделя'],['всё (n)','всё утро','der ganze Morgen','всё утро'],['все (Pl.)','все люди','alle Menschen','все люди']]},
+"Местоимение ДРУГОЙ / САМИ / САМ":{t:'другой (anderer) · сам (selbst)',col:'#ff79ad',rows:[['другой (m)','другой день','ein anderer Tag','другой день'],['другая (f)','другая книга','ein anderes Buch','другая книга'],['другие (Pl.)','другие люди','andere Menschen','другие люди'],['сам (m)','я сам','ich selbst','я сам'],['сама (f)','я сама','ich selbst (Frau)','я сама'],['сами (Pl.)','мы сами','wir selbst','мы сами']]},
+// Pronomen-Deklination (Rest)
+"Возвратное местоимение СЕБЯ":{t:'себя — sich (kein Nominativ!)',col:'#5aa9ff',rows:[['Gen / Akk','себя','Он видит себя.','он видит себя'],['Dativ','себе','Я куплю себе чай.','я куплю себе чай'],['Instrumental','собой','Возьми с собой!','возьми с собой!'],['Präpositional','о себе','Он говорит о себе.','он говорит о себе']]},
+"Относительное местоимение КОТОРЫЙ":{t:'который — Geschlecht nach dem Bezugswort',col:'#5aa9ff',rows:[['m','который','дом, который …','дом, который я вижу'],['f','которая','книга, которая …','книга, которая мне нравится'],['n','которое','окно, которое …','окно, которое открыто'],['Pl.','которые','люди, которые …','люди, которые живут здесь']]}
 };
 // Strukturierte Erklärung je Grammatik-Karte (Schlüssel = Karten-m): Wann? / Bildung / Deutsch-Kontrast / häufiger Fehler.
 const GRAM_ERKL={
@@ -2920,7 +2951,7 @@ const GRAMMAR_CAT={grammar:'Grundlagen',grammar_faelle:'Fälle',grammar_verben:'
 function startGrammarDrill(cat){
   var pool=GRAMMAR_DRILL.filter(function(x){return !cat||x.cat===cat;});
   if(pool.length<4)pool=GRAMMAR_DRILL;
-  var qs=pool.slice().sort(function(){return Math.random()-.5;}).slice(0,10);
+  var qs=shuffle(pool).slice(0,10);
   var qi=0,score=0;
   var ov=document.createElement('div');ov.className='levelup-overlay';document.body.appendChild(ov);
   function render(){
@@ -2933,7 +2964,7 @@ function startGrammarDrill(cat){
     }
     var q=qs[qi];
     var satz=q.q.replace('___','<span style="color:var(--cyan);font-weight:900;border-bottom:2px solid var(--cyan);padding:0 .3rem;">?</span>');
-    var btns=q.opts.slice().sort(function(){return Math.random()-.5;}).map(function(o){return '<button class="gd-opt" data-o="'+o+'" style="display:block;width:100%;margin-bottom:.45rem;padding:.65rem;font-size:1.05rem;font-weight:700;background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;color:var(--text);font-family:inherit;">'+o+'</button>';}).join('');
+    var btns=shuffle(q.opts).map(function(o){return '<button class="gd-opt" data-o="'+o+'" style="display:block;width:100%;margin-bottom:.45rem;padding:.65rem;font-size:1.05rem;font-weight:700;background:var(--glass2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;color:var(--text);font-family:inherit;">'+o+'</button>';}).join('');
     ov.innerHTML='<div class="levelup-box" style="max-width:360px;width:94%;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;"><span style="font-size:.75rem;color:var(--text3);">&#128209; Grammatik-Trainer &middot; '+(qi+1)+'/'+qs.length+'</span><button id="gdExit" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.05rem;font-family:inherit;padding:0 .2rem;">&#10005;</button></div>'+
       '<div style="font-size:1.15rem;font-weight:700;margin-bottom:.3rem;line-height:1.5;">'+satz+'</div>'+
       '<div style="font-size:.78rem;color:var(--text3);margin-bottom:.9rem;">Grundform: <strong>'+q.base+'</strong> &middot; '+q.de+'</div>'+btns+
@@ -3593,7 +3624,7 @@ function startSec(sec){
     // echte Distraktoren erzeugen (eigene Karten + Grundwortschatz als Auffüllung)
     var pool=customCards.concat(C['vocabulary']||[]);
     customCards.forEach(function(w){
-      var others=pool.filter(function(d){return d.t!==w.t&&d.m!==w.m;}).sort(function(){return Math.random()-.5;}).slice(0,3);
+      var others=shuffle(pool.filter(function(d){return d.t!==w.t&&d.m!==w.m;})).slice(0,3);
       w.o=[w.t].concat(others.map(function(d){return d.t;}));
       w.r=[w.m].concat(others.map(function(d){return d.m;}));
     });
@@ -3756,8 +3787,8 @@ function setupListenFirst(item){
 function getGapChoices(correct){
   // 4 Auswahlmöglichkeiten: richtige Antwort + 3 zufällige Buchstaben
   const all='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
-  const wrong=all.filter(l=>l!==correct).sort(()=>Math.random()-0.5).slice(0,3);
-  const choices=[correct,...wrong].sort(()=>Math.random()-0.5);
+  const wrong=shuffle(all.filter(l=>l!==correct)).slice(0,3);
+  const choices=shuffle([correct,...wrong]);
   return choices;
 }
 
@@ -4181,7 +4212,7 @@ function startDrill(){
     var typ=Math.floor(Math.random()*3);
     // Hör-Fragen für die stummen Zeichen Ь/Ъ vermeiden
     if(typ===2&&(pair.indexOf('Ь')>=0||pair.indexOf('Ъ')>=0))typ=Math.floor(Math.random()*2);
-    qs.push({pair:pair.slice().sort(function(){return Math.random()-.5;}),target:target,typ:typ});
+    qs.push({pair:shuffle(pair),target:target,typ:typ});
   }
   var qi2=0,score=0;
   var ov=document.createElement('div');
@@ -4255,8 +4286,8 @@ function startReadQuiz(){
   var qs=[];
   for(var i=0;i<10;i++){
     var target=words[Math.floor(Math.random()*words.length)];
-    var others=words.filter(function(w){return w.w!==target.w;}).sort(function(){return Math.random()-.5;}).slice(0,2);
-    qs.push({t:target,opts:[target].concat(others).sort(function(){return Math.random()-.5;}),typ:Math.floor(Math.random()*2)});
+    var others=shuffle(words.filter(function(w){return w.w!==target.w;})).slice(0,2);
+    qs.push({t:target,opts:shuffle([target].concat(others)),typ:Math.floor(Math.random()*2)});
   }
   var qi3=0,score=0;
   var ov=document.createElement('div');ov.className='levelup-overlay';document.body.appendChild(ov);
@@ -4376,8 +4407,8 @@ function loadAQGap(){
   }
   var gap=letter._gaps[aqGapIdx];
   var allL=['А','Б','В','Г','Д','Е','Ё','Ж','З','И','Й','К','Л','М','Н','О','П','Р','С','Т','У','Ф','Х','Ц','Ч','Ш','Щ','Ъ','Ы','Ь','Э','Ю','Я'];
-  var wrong=allL.filter(function(l){return l!==gap.answer;}).sort(function(){return Math.random()-.5;}).slice(0,3);
-  var opts=[gap.answer].concat(wrong).sort(function(){return Math.random()-.5;});
+  var wrong=shuffle(allL.filter(function(l){return l!==gap.answer;})).slice(0,3);
+  var opts=shuffle([gap.answer].concat(wrong));
   window._aqCurrent={answer:gap.answer,full:gap.full,sentence:gap.s};
 
   showSc('scAlphaQuiz');
@@ -4770,7 +4801,7 @@ function loadPuzzle(){
   document.getElementById('puzzleFeedback').innerHTML='';
   document.getElementById('puzzleWeiter').style.display='none';
   // Wörter mischen
-  puzzleWords=item.m.split(' ').sort(function(){return Math.random()-.5;});
+  puzzleWords=shuffle(item.m.split(' '));
   renderPuzzleWords();
   renderPuzzleAnswer();
 }
@@ -4896,6 +4927,7 @@ function loadDiktat(){
   document.getElementById('diktatInput').disabled=false;
   document.getElementById('diktatKyr').style.display='none';
   diktatKyrBuilt=false;
+  _lhUsed=0;
   // Automatisch vorsprechen
   setTimeout(function(){spk(item.m);},400);
 }
@@ -4928,14 +4960,16 @@ function checkDiktat(){
   var correct=item.m.trim();
   var fb=document.getElementById('diktatFeedback');
   document.getElementById('diktatInput').disabled=true;
-  // ё wie е behandeln (im Russischen üblich)
-  var nE=function(s){return s.toLowerCase().replace(/ё/g,'е');};
+  // ё wie е behandeln (im Russischen üblich) + Satzzeichen ignorieren
+  // (einen Punkt kann man nicht hören — "Плохо" muss gegen "Плохо." als richtig gelten)
+  var nE=function(s){return s.toLowerCase().replace(/ё/g,'е').replace(/[.!?,;:«»„“”"'—–-]/g,' ').replace(/\s+/g,' ').trim();};
   var sim=typeof levenshteinSim==='function'?levenshteinSim(nE(answer),nE(correct)):0;
   if(nE(answer)===nE(correct)||sim>=0.85){
     fb.innerHTML='<span style="color:#22c55e;">&#10003; Richtig!</span>';
     spk(correct);
     document.getElementById('diktatWeiter').style.display='block';
-    var us=GU();if(us[cu]){us[cu].stats.totalXp=(us[cu].stats.totalXp||0)+10;SU(us);}
+    var xpD=_lhUsed>0?5:10;
+    var us=GU();if(us[cu]){us[cu].stats.totalXp=(us[cu].stats.totalXp||0)+xpD;SU(us);}
   } else if(sim>=0.6){
     fb.innerHTML='<span style="color:#f97316;">&#9888; Fast richtig! Richtig: <strong>'+correct+'</strong><br>Du: '+answer+'</span>';
     document.getElementById('diktatWeiter').style.display='block';
@@ -4982,7 +5016,7 @@ function buildRFItems(cards){
     while(wrongCard.m===card.m&&tries<5){wrongCard=cards[Math.floor(Math.random()*cards.length)];tries++;}
     items.push({ru:card.m,de:wrongCard.t,correct:false,card:card});
   });
-  return items.sort(function(){return Math.random()-.5;}).slice(0,Math.min(16,items.length));
+  return shuffle(items).slice(0,Math.min(16,items.length));
 }
 
 function loadRF(){
@@ -5453,7 +5487,7 @@ function rdots(id,max){const el=document.getElementById(id);if(!el)return;el.inn
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function loadQ(){
   if(qi>=cb.length){finishQ();return;}
-  const item=cb[qi],cfg=DC[cd];at=0;
+  const item=cb[qi],cfg=DC[cd];at=0;_lhUsed=0;
   document.getElementById('qNum').textContent='Frage '+(qi+1)+'/'+cb.length;rdots('dotsEl',cfg.att);
   let q,prompt,opts;
   if(qm==='ru-de'){q=item.m;prompt=cs==='alphabet'?'Aussprache von "'+item.m+'"?':'Was bedeutet "'+item.m+'"?';opts=item.o;}
@@ -5467,38 +5501,58 @@ function loadQ(){
   if(cfg.sugg&&opts){sw2.style.display='block';shuffle(opts).forEach(opt=>{const b=document.createElement('button');b.className='sug';b.textContent=opt;b.onclick=()=>{inp.value=opt;document.querySelectorAll('#suggs .sug').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};sg.appendChild(b);});}
   else sw2.style.display='none';
   document.getElementById('bHint').style.display=cfg.hints?'':'none';
+  document.getElementById('bLetter').style.display=cfg.hints?'':'none';
   document.getElementById('bSol').style.display=cfg.sol?'':'none';
   document.getElementById('kyrLbl').style.display=(qm==='de-ru'&&cfg.kb)?'block':'none';
   document.getElementById('kyr').style.display=(qm==='de-ru'&&cfg.kb)?'flex':'none';
   inp.focus();
 }
 
+// Buchstaben-Hilfe: verr\u00e4t den n\u00e4chsten Buchstaben der L\u00f6sung (korrigiert vorher falsch Getipptes).
+// Nutzung z\u00e4hlt wie die \ud83d\udca1-Hilfe \u2192 halbe Punkte (handleA) bzw. halbe XP (checkDiktat).
+var _lhUsed=0;
+function nextLetterHelp(iid,target){
+  var inp=document.getElementById(iid);if(!inp||inp.disabled)return;
+  var t=(target||'').trim();if(!t)return;
+  var nE=function(s){return s.toLowerCase().replace(/\u0451/g,'\u0435');};
+  var cur=inp.value,i=0;
+  while(i<cur.length&&i<t.length&&nE(cur.charAt(i))===nE(t.charAt(i)))i++;
+  if(i>=t.length){inp.focus();return;} // L\u00f6sung steht schon komplett da
+  inp.value=t.slice(0,i+1);
+  _lhUsed++;
+  inp.focus();
+}
+function letterHelpQ(){var item=cb[qi];if(item)nextLetterHelp('qIn',qm==='ru-de'?item.t:item.m);}
 function showHint(){const item=cb[qi];document.getElementById('hintBox').innerHTML='<strong>Tipp:</strong> '+item.s+(item.mn?' \u2014 '+item.mn:(item.e?' \u00b7 gesprochen: \u201e'+item.e+'\u201c':''));document.getElementById('hintBox').style.display='block';}
 function showSol(){const item=cb[qi];document.getElementById('solBox').innerHTML='<strong>L\xf6sung:</strong> '+(qm==='ru-de'?item.t:item.m);document.getElementById('solBox').style.display='block';}
 function skipQ(){at=0;qi++;loadQ();}
 
-function checkAns(){
-  const item=cb[qi],ua=document.getElementById('qIn').value.trim().toLowerCase();
-  if(!ua){alert('Bitte Antwort eingeben!');return;}
-  const raw=qm==='ru-de'?item.t:item.m,correct=raw.toLowerCase().trim();
-  // ё wie е behandeln (im Russischen üblich) + Satzzeichen/Leerzeichen ignorieren
+// Kernvergleich für Antworten — genutzt von Quiz (checkAns) UND Fehler-Wiederholung (checkRetry):
+// ё wie е, Satzzeichen/Leerzeichen egal, Klammer-Zusätze der Lösung optional ("eins (m/f)" = "eins"),
+// "A / B"-Varianten einzeln gültig. Tippfehler-Toleranz NUR für selbst Getipptes —
+// angeklickte Vorschläge (opts) müssen exakt stimmen (sonst gilt "Он читает" für "Она читает").
+function ansMatch(ua,raw,opts){
+  if(!raw)return false;
+  const correct=String(raw).toLowerCase().trim();
   const nrm=s=>s.replace(/ё/g,'е').replace(/[().!?,\s]/g,'');
-  // Klammer-Zusätze in der Lösung wie "eins (m/f)" sind nur Erklärung — Antwort gilt mit und ohne
   const noPar=s=>s.replace(/\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();
   const bases=[correct,noPar(correct)].filter(s=>s.length>0);
-  // Tippfehler-Toleranz NUR für selbst Getipptes — angeklickte Vorschläge müssen exakt stimmen
-  // (sonst gilt z. B. "Он читает" als richtig, wenn "Она читает" gefragt war)
-  const opts=(qm==='ru-de'?item.o:item.r)||[];
-  const typed=!opts.some(o=>String(o).trim().toLowerCase()===ua);
+  const typed=!(opts||[]).some(o=>String(o).trim().toLowerCase()===ua);
   const uaC=nrm(ua);
-  // Varianten wie "Gut / OK" einzeln akzeptieren; sonst exakt oder (getippt) mit kleiner Tippfehler-Toleranz
   let ok=false;
   bases.forEach(base=>{
     const bC=nrm(base);
     const vars=base.split('/').map(v=>nrm(v.trim())).filter(v=>v.length>0);
     if(uaC===bC||vars.some(v=>v===uaC)||(typed&&vars.some(v=>v.length>3&&levenshteinSim(uaC,v)>=0.85)))ok=true;
   });
-  handleA(ok,item,false);
+  return ok;
+}
+function checkAns(){
+  const item=cb[qi],ua=document.getElementById('qIn').value.trim().toLowerCase();
+  if(!ua){alert('Bitte Antwort eingeben!');return;}
+  const raw=qm==='ru-de'?item.t:item.m;
+  const opts=(qm==='ru-de'?item.o:item.r)||[];
+  handleA(ansMatch(ua,raw,opts),item,false);
 }
 
 function handleA(ok,item,isL){
@@ -5512,7 +5566,7 @@ function handleA(ok,item,isL){
     let xp=hadErrors?3:10;xp=Math.round(xp*cfg.xpM);
     let pts=hadErrors?3:10;pts=Math.round(pts*cfg.pM);
     const sb=document.getElementById(isL?'lSol':'solBox'),hb=document.getElementById(isL?'lHint':'hintBox');
-    if(sb&&sb.style.display==='block'){pts=0;xp=0;}else if(hb&&hb.style.display==='block'){pts=Math.floor(pts/2);xp=Math.floor(xp/2);}
+    if(sb&&sb.style.display==='block'){pts=0;xp=0;}else if((hb&&hb.style.display==='block')||_lhUsed>0){pts=Math.floor(pts/2);xp=Math.floor(xp/2);}
     fb.textContent=(hadErrors?'\u26a0 Noch geschafft! ':'\u2713 Richtig! ')+(xp>0?'+'+xp+' XP':'0 XP (Hilfe benutzt)');
     fb.className='fb ok';
     const dotEl=document.getElementById(did);if(dotEl){const d=dotEl.querySelectorAll('.dot');if(d[0])d[0].className='dot ok';}
@@ -5536,7 +5590,7 @@ function handleA(ok,item,isL){
 
 function loadLQ(){
   if(qi>=cb.length){finishQ();return;}
-  const item=cb[qi];at=0;
+  const item=cb[qi];at=0;_lhUsed=0;
   document.getElementById('lqNum').textContent='Frage '+(qi+1)+'/'+cb.length;rdots('ldotsEl',DC[cd].att);
   const inp=document.getElementById('lIn');inp.value='';inp.className='qi';
   ['lHint','lSol','lFb'].forEach(id=>{document.getElementById(id).style.display='none';});
@@ -5545,7 +5599,7 @@ function loadLQ(){
   const sg=document.getElementById('lSuggs');sg.innerHTML='';
   // Hören-Karten haben keine r-Liste → Vorschläge aus anderen Karten der Sektion bauen
   let opts=item.r&&item.r.length?[...item.r]:(()=>{
-    const pool=(C[cs]||cb).filter(it=>it.m!==item.m).sort(()=>Math.random()-.5).slice(0,3).map(it=>it.m);
+    const pool=shuffle((C[cs]||cb).filter(it=>it.m!==item.m)).slice(0,3).map(it=>it.m);
     return [item.m,...pool];
   })();
   shuffle(opts).forEach(opt=>{const b=document.createElement('button');b.className='sug';b.textContent=opt;b.onclick=()=>{inp.value=opt;document.querySelectorAll('#lSuggs .sug').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};sg.appendChild(b);});
@@ -5558,8 +5612,8 @@ function skipLQ(){at=0;qi++;loadLQ();}
 function checkListen(){
   const item=cb[qi],ua=document.getElementById('lIn').value.trim().toLowerCase();
   if(!ua){alert('Bitte Antwort eingeben!');return;}
-  // Russisch (gehörter Text) ODER deutsche Bedeutung gelten als richtig; ё wie е
-  const nrm=s=>s.toLowerCase().replace(/ё/g,'е').replace(/[!?.,]/g,'').trim();
+  // Russisch (gehörter Text) ODER deutsche Bedeutung gelten als richtig; ё wie е, Satzzeichen egal
+  const nrm=s=>s.toLowerCase().replace(/ё/g,'е').replace(/[.!?,;:«»„“”"'—–-]/g,' ').replace(/\s+/g,' ').trim();
   const uaC=nrm(ua),deC=nrm(item.t),ruC=nrm(item.m);
   const ok=uaC===deC||uaC===ruC||(deC.length>3&&levenshteinSim(uaC,deC)>=0.85)||(ruC.length>3&&levenshteinSim(uaC,ruC)>=0.85);
   handleA(ok,item,true);
@@ -5612,7 +5666,7 @@ function startSRSSession(){
   });
   if(!due.length){alert('Keine Karten zur Wiederholung!');return;}
   // Shuffle und in cb laden
-  due.sort(function(){return Math.random()-.5;});
+  due=shuffle(due);
   cb=due.slice(0,Math.min(20,due.length)).map(function(d){return d.item;});
   cs='vocabulary';cd=cd||'standard';
   ci=0;sp=0;sc=0;sw=0;sxp=0;
@@ -5696,7 +5750,7 @@ function showMistakes(){
 function startRetryMode(){
   const errs=getErrs();if(!errs.length){alert('Keine Fehler gespeichert!');return;}
   retryCb=errs.map(e=>e.item||{m:e.m,t:'?',s:'',x:'',o:[],r:[]}).filter(Boolean);
-  retryCb=[...retryCb].sort(()=>Math.random()-.5);
+  retryCb=shuffle(retryCb);
   retryQi=0;retryAt=0;
   document.getElementById('retryNum').textContent=retryCb.length;
   showSc('scRetry');loadRetryQ();
@@ -5719,11 +5773,11 @@ function skipRetry(){retryQi++;loadRetryQ();}
 function checkRetry(){
   const item=retryCb[retryQi],ua=document.getElementById('retryIn').value.trim().toLowerCase();
   if(!ua){alert('Bitte Antwort eingeben!');return;}
-  // ё wie е behandeln (im Russischen üblich)
-  const uaE=ua.replace(/ё/g,'е');
-  const correct=(item.t||'').toLowerCase().trim().replace(/ё/g,'е'),uaC=uaE.replace(/[().!?,\s]/g,''),cC=correct.replace(/[().!?,\s]/g,'');
-  const vars=correct.split('/').map(v=>v.trim().replace(/[().!?,]/g,'').trim());
-  const ok=uaE===correct||uaC===cC||vars.some(v=>v===uaC)||correct.includes(uaE)&&uaE.length>1||uaE.includes(cC)&&cC.length>1;
+  // Gleiche robuste Prüfung wie im Quiz (ansMatch) — die alten Teilwort-Regeln
+  // akzeptierten z. B. "zwanzig" für "einundzwanzig" oder "Schwein" für "Ei".
+  // Deutsch (t) ODER Russisch (m) gilt — die Frage lautet "Was bedeutet oder wie lautet …?"
+  const opts=(item.o||[]).concat(item.r||[]);
+  const ok=ansMatch(ua,item.t,opts)||ansMatch(ua,item.m,opts);
   const inp=document.getElementById('retryIn'),fb=document.getElementById('retryFb');
   if(ok){
     flashScreen('green');inp.className='qi ok';fb.textContent='\u2713 Richtig! Fehler behoben!';fb.className='fb ok';
