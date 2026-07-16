@@ -246,7 +246,7 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 </style>
 </head>
 <body>
-<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 17</div>
+<div id="buildTag" style="position:fixed;right:4px;bottom:3px;z-index:99999;font-size:10px;color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:1px 5px;border-radius:6px;pointer-events:none;font-family:monospace;">Build 18</div>
 <div class="flash" id="flash"></div>
 <div class="s-tooltip" id="tooltip"></div>
 <svg width="0" height="0" style="position:absolute">
@@ -595,6 +595,28 @@ Noch keine eigenen Vokabeln.<br>Füge deine ersten Karten hinzu!
 <div id="storyVocab" style="font-size:.8rem;color:var(--text3);line-height:1.8;"></div>
 </div>
 <button class="btn primary" style="width:100%;margin-top:1rem;" onclick="goHome()">Weiter lernen</button>
+</div>
+
+<!-- VOLLVERSION / PAYWALL (erscheint nur in der Android-App) -->
+<div id="scPaywall" class="sc">
+<div style="margin-bottom:.72rem;"><button class="btn sm primary" onclick="goHome()">&#8962; Start</button></div>
+<div class="result-box">
+<div style="font-size:2.6rem;margin-bottom:.4rem;">&#128275;</div>
+<div style="font-size:1.25rem;font-weight:800;margin-bottom:.3rem;">Bukva Vollversion</div>
+<div style="font-size:.82rem;color:var(--text3);margin-bottom:.9rem;">Das komplette Alphabet ist gratis. Mit der Vollversion schaltest du einmalig alles frei &mdash; f&uuml;r immer:</div>
+<div class="glass" style="text-align:left;font-size:.82rem;line-height:2;padding:.8rem 1rem;border-radius:var(--r-sm);margin-bottom:1rem;">
+&#128218; 500+ Vokabeln mit muttersprachlichem Audio<br>
+&#128221; Komplette Grammatik &mdash; einfach erkl&auml;rt<br>
+&#128290; Zahlen, Farben &amp; Wochentage<br>
+&#127908; Nachsprechen, H&ouml;r&uuml;bungen &amp; Diktat<br>
+&#128172; Dialoge, S&auml;tze &amp; Mini-Geschichten<br>
+&#9989; Einmal zahlen &mdash; keine Werbung, kein Abo
+</div>
+<button class="btn primary" style="width:100%;padding:.9rem;font-size:1rem;" onclick="buyPro()">Vollversion freischalten &middot; <span id="pwPrice">4,99 &euro;</span></button>
+<div id="pwState" style="display:none;font-size:.8rem;margin-top:.7rem;"></div>
+<button class="btn sm ghost" style="width:100%;margin-top:.8rem;" onclick="restorePro()">Kauf wiederherstellen</button>
+<div style="font-size:.68rem;color:var(--text3);margin-top:.7rem;">Einmaliger Kauf &uuml;ber Google Play &middot; gilt auf allen Ger&auml;ten mit deinem Google-Konto</div>
+</div>
 </div>
 
 <!-- ERGEBNIS -->
@@ -2302,6 +2324,7 @@ function startColorTrainer(){
 // ── HÖREN ─────────────────────────────────────────────────────────
 // Hörverständnis: Satz hören → richtige deutsche Bedeutung aus 4 wählen
 function startListenComprehension(){
+  if(!proGate('listening'))return;
   var pool=(C['listening']||[]).filter(function(x){return x.m&&x.t;});
   if(pool.length<4){alert('Zu wenige Hör-Inhalte!');return;}
   var qs=[];
@@ -2344,6 +2367,7 @@ function startListenComprehension(){
 }
 
 function showListeningMenu(){
+  if(!proGate('listening'))return;
   var us=GU();
   var data=getDifficultyPool(C['listening']||[],cd,'listening');
   var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress['listening']||0,data.length):0;
@@ -2364,6 +2388,7 @@ function showListeningMenu(){
 }
 
 function showColorsMenu(){
+  if(!proGate('colors'))return;
   var us=GU();
   var data=getDifficultyPool(C['colors']||[],cd,'colors');
   var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress['colors']||0,data.length):0;
@@ -2470,6 +2495,7 @@ function startTodayQuiz(){
 }
 
 function showWeekdaysMenu(){
+  if(!proGate('weekdays'))return;
   var us=GU();
   var data=getDifficultyPool(C['weekdays']||[],cd,'weekdays');
   var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress['weekdays']||0,data.length):0;
@@ -2490,6 +2516,7 @@ function showWeekdaysMenu(){
 }
 
 function showNumbersMenu(){
+  if(!proGate('numbers'))return;
   var us=GU();
   var data=getDifficultyPool(C['numbers']||[],cd,'numbers');
   var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress['numbers']||0,data.length):0;
@@ -2512,6 +2539,7 @@ function showNumbersMenu(){
 }
 
 function showVocabMenu(){
+  if(!proGate('vocabulary'))return;
   var us=GU();
   var goalKey=us[cu]&&(us[cu].themeVocab||us[cu].goal)?'vocab_'+(us[cu].themeVocab||us[cu].goal):null;
   // Fokus-Modus: Solange das im Onboarding gewählte Thema noch nicht abgeschlossen ist,
@@ -2949,6 +2977,7 @@ const GRAMMAR_DRILL=[
 // Grammatik-Sektion → passende Trainer-Kategorie (fürs Quiz nach dem Lernen)
 const GRAMMAR_CAT={grammar:'Grundlagen',grammar_faelle:'Fälle',grammar_verben:'Verben',grammar_pronomen:'Pronomen',grammar_pronomen2:'Pronomen',grammar_praepositionen:'Präpos.'};
 function startGrammarDrill(cat){
+  if(!proGate('grammar'))return;
   var pool=GRAMMAR_DRILL.filter(function(x){return !cat||x.cat===cat;});
   if(pool.length<4)pool=GRAMMAR_DRILL;
   var qs=shuffle(pool).slice(0,10);
@@ -2984,6 +3013,7 @@ function startGrammarDrill(cat){
 }
 
 function showGrammarMenu(){
+  if(!proGate('grammar'))return;
   var ov=document.createElement('div');
   ov.className='levelup-overlay';
   var topics=[
@@ -3101,6 +3131,7 @@ function showSc(id){document.querySelectorAll('.sc').forEach(function(s){s.class
 function init(){
   registerVocabThemes();
   initMic(); // IMMER initialisieren (auch bei Auto-Login!), sonst ist Spracherkennung nie bereit
+  initPro(); // Vollversion-Status (nur App; im Browser bleibt alles frei)
   const u=_lg('ru_cur');
   if(u){const us=GU();if(us[u]){cu=u;cd=us[u].diff||'standard';showDash();return;}}
   showSc('scLogin');
@@ -3419,6 +3450,7 @@ function freqWordsState(d){
   return {done:done,total:total,nextKey:nextKey};
 }
 function startFreqWords(){
+  if(!proGate('vocab_freq'))return;
   var us=GU(),d=us[cu]||{};
   var st=freqWordsState(d);
   startSec(st.nextKey||'vocab_top1'); // alles durch → von vorn (Wiederholung)
@@ -3551,7 +3583,7 @@ function showDash(){
         if(nextRowId==='vocab_freq')rowF.classList.add('pfad-next');
         rowF.onclick=function(){startFreqWords();};
         const lblF=st.nextKey?(st.done+' / '+st.total+' gelernt'):(st.total+' / '+st.total+' — komplett! &#127942;');
-        rowF.innerHTML='<div class="pfad-icon">&#128293;</div><div class="pfad-info"><h3>H\xe4ufigste W\xf6rter'+(nextRowId==='vocab_freq'?' <span class="pfad-next-badge">&#9654; Hier weitermachen</span>':'')+'</h3><p>Die wichtigsten '+st.total+' W\xf6rter — Frequenz-Wortschatz</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctF+'%"></div></div><div class="prog-lbl">'+lblF+'</div></div><div class="pfad-arr">'+(st.done>0?'&#8635;':'&#9654;')+'</div>';
+        rowF.innerHTML='<div class="pfad-icon">&#128293;</div><div class="pfad-info"><h3>H\xe4ufigste W\xf6rter'+(proLocked('vocab_freq')?' &#128274;':'')+(nextRowId==='vocab_freq'?' <span class="pfad-next-badge">&#9654; Hier weitermachen</span>':'')+'</h3><p>Die wichtigsten '+st.total+' W\xf6rter — Frequenz-Wortschatz</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctF+'%"></div></div><div class="prog-lbl">'+lblF+'</div></div><div class="pfad-arr">'+(st.done>0?'&#8635;':'&#9654;')+'</div>';
         pfEl.appendChild(rowF);
         return;
       }
@@ -3567,12 +3599,12 @@ function showDash(){
       if(isNext)row.classList.add('pfad-next');
       row.onclick=sec.id==='custom'?()=>showCustomScreen():sec.id==='grammar'?()=>showGrammarMenu():sec.id==='alphabet'?()=>showAlphabetMenu():sec.id==='vocabulary'?()=>showVocabMenu():sec.id==='numbers'?()=>showNumbersMenu():sec.id==='colors'?()=>showColorsMenu():sec.id==='weekdays'?()=>showWeekdaysMenu():sec.id==='listening'?()=>showListeningMenu():sec.id==='speaking'?()=>showSpeakingMenu():sec.id==='sentences'?()=>showSentencesMenu():()=>startSec(sec.id);
       const nF=data.length?doneN%data.length+1:1,nT=data.length?Math.min(doneN%data.length+cfg.bs,data.length):0;
-      row.innerHTML='<div class="pfad-icon">'+sec.icon+'</div><div class="pfad-info"><h3>'+sec.title+(isNext?' <span class="pfad-next-badge">&#9654; Hier weitermachen</span>':'')+(bdg>0?' <span style="font-size:.63rem;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:.08rem .32rem;border-radius:20px;">'+bdg+' WH</span>':'')+'</h3><p>'+sec.desc+'</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctN+'%"></div></div><div class="prog-lbl">'+(rec?'&#128161; Tipp: erst '+rec:doneN+' / '+data.length+' gelernt'+(doneN>0?' \xb7 N\xe4chste: '+nF+'\u2013'+nT:''))+'</div></div><div class="pfad-arr">'+(doneN>0?'&#8635;':'&#9654;')+'</div>';
+      row.innerHTML='<div class="pfad-icon">'+sec.icon+'</div><div class="pfad-info"><h3>'+sec.title+(proLocked(sec.id)?' &#128274;':'')+(isNext?' <span class="pfad-next-badge">&#9654; Hier weitermachen</span>':'')+(bdg>0?' <span style="font-size:.63rem;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:.08rem .32rem;border-radius:20px;">'+bdg+' WH</span>':'')+'</h3><p>'+sec.desc+'</p><div class="prog-bar"><div class="prog-fill" style="width:'+pctN+'%"></div></div><div class="prog-lbl">'+(rec?'&#128161; Tipp: erst '+rec:doneN+' / '+data.length+' gelernt'+(doneN>0?' \xb7 N\xe4chste: '+nF+'\u2013'+nT:''))+'</div></div><div class="pfad-arr">'+(doneN>0?'&#8635;':'&#9654;')+'</div>';
       pfEl.appendChild(row);
     });
   });
   const sb=document.createElement('div');sb.style.marginTop='.75rem';
-  sb.innerHTML='<button class="btn ghost" style="width:100%;padding:.72rem;" onclick="showStory()">&#128218; Mini-Geschichten lesen</button>';
+  sb.innerHTML='<button class="btn ghost" style="width:100%;padding:.72rem;" onclick="showStory()">&#128218; Mini-Geschichten lesen'+(proLocked('story')?' &#128274;':'')+'</button>';
   pfEl.appendChild(sb);
 }
 
@@ -3617,6 +3649,7 @@ function getDifficultyPool(data,diffKey,sec){
 }
 
 function startSec(sec){
+  if(!proGate(sec))return;
   // Themen-Vokabeln sind eigene Sektionen (vocab_urlaub usw.) — siehe showVocabMenu
   if(sec==='custom'){
     const customCards=getCustomCards();
@@ -4596,6 +4629,7 @@ let spkIdx=0,spkCorrect=false;
 // Die App stellt eine Frage (Audio+Text), du antwortest per Mikrofon
 // oder lässt dir die Musterantwort zeigen/vorsprechen.
 function startDialogMode(){
+  if(!proGate('dialog'))return;
   var items=(typeof DLG!=='undefined'?DLG:[]).slice();
   if(!items.length){alert('Keine Dialoge vorhanden!');return;}
   var di=0,score=0;
@@ -4654,6 +4688,7 @@ function startDialogMode(){
 }
 
 function showSpeakingMenu(){
+  if(!proGate('speaking'))return;
   var us=GU();
   var data=getDifficultyPool(C['speaking']||[],cd,'speaking');
   var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress['speaking']||0,data.length):0;
@@ -4674,6 +4709,7 @@ function showSpeakingMenu(){
 // ── SÄTZE ─────────────────────────────────────────────────────────
 var _sentMode=null;
 function showSentencesMenu(){
+  if(!proGate('sentences'))return;
   var us=GU();
   var data=getDifficultyPool(C['sentences']||[],cd,'sentences');
   var done=us[cu]&&us[cu].progress?Math.min(us[cu].progress['sentences']||0,data.length):0;
@@ -4910,6 +4946,7 @@ function endPuzzle(){showDash();}
 var diktatIdx=0,diktatCB=[],diktatKyrBuilt=false;
 
 function startDiktatMode(cards){
+  if(!proGate('listening'))return;
   diktatCB=cards.filter(function(c){return c.m&&c.m.length>2;});
   diktatIdx=0;
   diktatKyrBuilt=false;
@@ -5414,6 +5451,80 @@ function startMic(mode){
   },()=>{btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';},()=>{btn.classList.remove('listening');btn.innerHTML='&#127908; Nachsprechen';});
 }
 
+// ===== VOLLVERSION / IN-APP-KAUF (nur Android-App; Website bleibt komplett frei) =====
+// Gratis-Zone in der App: NUR das Alphabet. Alles andere zeigt die Paywall.
+var proUnlocked=true; // Browser-Standard: alles frei; initPro() setzt den App-Wert
+var _pwPrice='4,99 €';
+function _capNative(){
+  try{
+    var Cp=window.Capacitor;if(!Cp)return false;
+    return (typeof Cp.isNativePlatform==='function')?Cp.isNativePlatform():!!(Cp.platform&&Cp.platform!=='web');
+  }catch(e){return false;}
+}
+function _capBilling(){
+  try{
+    var Cp=window.Capacitor;
+    if(_capNative()&&Cp.Plugins&&Cp.Plugins.BukvaBilling)return Cp.Plugins.BukvaBilling;
+  }catch(e){}
+  return null;
+}
+function initPro(){
+  var b=_capBilling();
+  if(!b){proUnlocked=true;return;}
+  proUnlocked=(_lg('bukva_pro')==='1'); // Offline-Cache, bis Google Play antwortet
+  b.isPurchased().then(function(r){
+    var was=proUnlocked;
+    proUnlocked=!!(r&&r.purchased);
+    _ls('bukva_pro',proUnlocked?'1':'0');
+    var d=document.getElementById('scDash');
+    if(was!==proUnlocked&&d&&d.classList.contains('active'))showDash(); // Schloss-Symbole aktualisieren
+  }).catch(function(e){});
+  b.getPrice().then(function(r){
+    if(r&&r.price){_pwPrice=r.price;var el=document.getElementById('pwPrice');if(el)el.textContent=_pwPrice;}
+  }).catch(function(e){});
+}
+function proLocked(sec){return !!_capBilling()&&!proUnlocked&&sec!=='alphabet';}
+// Einheitlicher Wächter: true = darf weiter; false = Paywall wurde gezeigt
+function proGate(sec){if(!proLocked(sec))return true;showPaywall();return false;}
+function showPaywall(){
+  var el=document.getElementById('pwPrice');if(el)el.textContent=_pwPrice;
+  var st=document.getElementById('pwState');if(st){st.style.display='none';st.innerHTML='';}
+  showSc('scPaywall');
+}
+function _pwMsg(t,col){var st=document.getElementById('pwState');if(st){st.style.display='block';st.style.color=col||'var(--text3)';st.innerHTML=t;}}
+function buyPro(){
+  var b=_capBilling();if(!b)return;
+  _pwMsg('Google-Play-Kauf wird ge\xf6ffnet …');
+  b.buy().then(function(r){
+    if(r&&r.purchased){
+      proUnlocked=true;_ls('bukva_pro','1');
+      showConfetti();
+      _pwMsg('&#127881; Vielen Dank! Die Vollversion ist freigeschaltet.','#22c55e');
+      setTimeout(function(){showDash();},1400);
+    } else if(r&&r.pending){
+      _pwMsg('Deine Zahlung wird noch verarbeitet. Die Freischaltung folgt automatisch, sobald sie abgeschlossen ist.','var(--orange)');
+    } else {
+      _pwMsg('Kauf abgebrochen — kein Problem, das Alphabet bleibt gratis.','var(--text3)');
+    }
+  }).catch(function(e){
+    _pwMsg('Kauf gerade nicht m\xf6glich. Bitte pr\xfcfe deine Internetverbindung und versuche es noch einmal.','var(--red)');
+  });
+}
+function restorePro(){
+  var b=_capBilling();if(!b)return;
+  _pwMsg('Suche vorhandene K\xe4ufe …');
+  b.isPurchased().then(function(r){
+    if(r&&r.purchased){
+      proUnlocked=true;_ls('bukva_pro','1');
+      _pwMsg('&#10003; Kauf gefunden — Vollversion freigeschaltet!','#22c55e');
+      setTimeout(function(){showDash();},1200);
+    } else {
+      _pwMsg('Kein Kauf mit diesem Google-Konto gefunden.','var(--text3)');
+    }
+  }).catch(function(e){_pwMsg('Konnte nicht pr\xfcfen — bist du online?','var(--red)');});
+}
+// ===== ENDE VOLLVERSION =====
+
 function bldKB(iid,cid){
   const c=document.getElementById(cid);if(!c)return;c.innerHTML='';
   KYR.forEach(k=>{const b=document.createElement('button');b.className='kkey';b.textContent=k;b.onclick=()=>{const i=document.getElementById(iid);if(i){i.value+=k;i.focus();}};c.appendChild(b);});
@@ -5792,7 +5903,7 @@ function checkRetry(){
 }
 
 // MINI-GESCHICHTEN
-function showStory(){storyIdx=0;renderStory();showSc('scStory');}
+function showStory(){if(!proGate('story'))return;storyIdx=0;renderStory();showSc('scStory');}
 function nextStory(){storyIdx=(storyIdx+1)%STORIES.length;renderStory();}
 function renderStory(){
   const story=STORIES[storyIdx];
@@ -5841,6 +5952,7 @@ function getCustomCards(){try{return JSON.parse(_lg('ru_custom_'+cu)||'[]');}cat
 function saveCustomCards(cards){_ls('ru_custom_'+cu,JSON.stringify(cards));}
 
 function showCustomScreen(){
+  if(!proGate('custom'))return;
   showSc('scCustom');
   renderCustomList();
 }
