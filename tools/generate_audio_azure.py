@@ -11,6 +11,9 @@
 #
 # F0 (gratis) hat ein Rate-Limit -> Standard-Pause 3 s/Clip (dauert ~2 h fuer alle).
 # Auf S0 kannst du es beschleunigen:  export AZURE_DELAY=0
+#
+# NUR FEHLENDE Clips nachziehen (nach neuen Texten in index.html):
+#   export AZURE_ONLY_MISSING=1
 import os
 import sys
 import json
@@ -26,6 +29,7 @@ OUTFMT = "audio-24khz-48kbitrate-mono-mp3"
 KEY = os.environ.get("AZURE_SPEECH_KEY")
 REGION = os.environ.get("AZURE_SPEECH_REGION", "northeurope")
 DELAY = float(os.environ.get("AZURE_DELAY", "3.0"))  # Sekunden Pause zwischen Clips (F0-Limit)
+ONLY_MISSING = os.environ.get("AZURE_ONLY_MISSING", "") not in ("", "0")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 AUDIO_DIR = os.path.join(HERE, "..", "audio")
@@ -72,6 +76,16 @@ def main():
         texts = [t.strip() for t in json.load(f) if t.strip()]
     os.makedirs(AUDIO_DIR, exist_ok=True)
 
+    # Manifest deckt IMMER alle Texte ab; erzeugt wird ggf. nur, was fehlt.
+    alle = texts
+    if ONLY_MISSING:
+        texts = [t for t in texts
+                 if not os.path.exists(os.path.join(AUDIO_DIR, fnv1a(t) + ".mp3"))]
+        print("Nur fehlende Clips: %d von %d." % (len(texts), len(alle)))
+        if not texts:
+            print("Nichts zu tun - alle Clips sind vorhanden.")
+            return
+
     ok = 0
     fail = 0
     errs = []
@@ -109,7 +123,7 @@ def main():
 
     # Manifest fuer den Offline-Download neu schreiben (gleiche Hashes wie vorher)
     with open(os.path.join(AUDIO_DIR, "manifest.json"), "w", encoding="utf-8") as f:
-        json.dump([fnv1a(t) + ".mp3" for t in texts], f, indent=0)
+        json.dump([fnv1a(t) + ".mp3" for t in alle], f, indent=0)
 
     print("\nFertig: %d erzeugt, %d fehlgeschlagen (Region %s)." % (ok, fail, REGION))
     for t, e in errs[:10]:
