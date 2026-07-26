@@ -213,6 +213,14 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 .ctx-ru{color:var(--text);font-weight:600;margin-bottom:.12rem;}
 /* „Helle Stelle": gesprochener Text leuchtet während der Wiedergabe (Tester-Feedback) */
 .spk-hl{background:rgba(0,229,200,.22)!important;box-shadow:0 0 0 4px rgba(0,229,200,.22)!important;border-radius:8px;}
+/* Hinweis auf die Android-App (nur im Browser sichtbar) */
+.play-banner{display:flex;align-items:center;gap:.7rem;margin-top:1.1rem;padding:.75rem .9rem;background:rgba(0,229,200,.06);border:1px solid rgba(0,229,200,.22);border-radius:var(--r-sm);text-decoration:none;color:inherit;transition:background .15s;}
+.play-banner:hover{background:rgba(0,229,200,.11);}
+.play-banner .pb-ico{font-size:1.5rem;line-height:1;}
+.play-banner .pb-txt{flex:1;}
+.play-banner .pb-h{font-size:.82rem;font-weight:700;color:var(--cyan);}
+.play-banner .pb-p{font-size:.72rem;color:var(--text3);line-height:1.4;}
+.play-banner .pb-arr{color:var(--cyan);font-size:1rem;}
 .ctx-slow{cursor:pointer;opacity:.7;margin-left:.35rem;}
 .ctx-slow:hover{opacity:1;}
 .ctx-de{color:var(--text3);font-style:italic;}
@@ -266,6 +274,15 @@ body::after{content:'';position:fixed;bottom:-20%;right:-20%;width:50%;height:50
 <div class="field"><label>Passwort</label><input class="inp" id="pw" type="password" name="password" placeholder="Dein Passwort" autocomplete="current-password"></div>
 <button class="btn primary" style="width:100%;margin-bottom:.5rem;padding:.82rem;" onclick="login()">Anmelden</button>
 <button class="btn ghost" style="width:100%;padding:.82rem;" onclick="register()">Neues Konto erstellen</button>
+<!-- Android-Hinweis: nur im Browser sichtbar, in der App blendet initPro() ihn aus -->
+<a id="playBanner" class="play-banner" href="https://play.google.com/store/apps/details?id=de.bukva.app" target="_blank" rel="noopener">
+<div class="pb-ico">&#128241;</div>
+<div class="pb-txt">
+<div class="pb-h">Jetzt als Android-App</div>
+<div class="pb-p">Offline lernen, direkt vom Startbildschirm &mdash; Alphabet gratis</div>
+</div>
+<div class="pb-arr">&#8250;</div>
+</a>
 </div>
 </div>
 
@@ -5469,6 +5486,8 @@ function _capBilling(){
   return null;
 }
 function initPro(){
+  // In der App ist der Play-Store-Hinweis sinnlos -> ausblenden
+  if(_capNative()){var pb=document.getElementById('playBanner');if(pb)pb.style.display='none';}
   var b=_capBilling();
   if(!b){proUnlocked=true;return;}
   proUnlocked=(_lg('bukva_pro')==='1'); // Offline-Cache, bis Google Play antwortet
